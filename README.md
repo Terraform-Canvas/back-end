@@ -66,11 +66,13 @@ JWT_REFRESH_KEY="refresh"
 JWT_REFRESH_KEY_EXPIRE_HOURS_COUNT=720
 
 # OCI SDK settings:
-TenancyID=ocid
-UserID=ocid
-Fingerprint=
-PrivateKeyFile=/test
-Region=us-ashburn-1
+tenancyID=tenancy
+userID=user
+fingerprint=fingerprint
+privateKeyFile=filePath
+region=us-ashburn-1
+compartmentID=compartmentID
+privateKeyPass=
 
 ```
 
