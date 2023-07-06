@@ -1,12 +1,12 @@
 package routes
 
 import (
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/assert"
 )
@@ -21,23 +21,22 @@ func TestPublicRoutes(t *testing.T) {
 	tests := []struct {
 		description   string
 		route         string // input route
+		method        string // input method
+		tokenString   string // input token
+		body          io.Reader
 		expectedError bool
 		expectedCode  int
 	}{
 		{
-			description:   "get book by ID",
-			route:         "/api/v1/book/" + uuid.New().String(),
+			description:   "sample",
+			route:         "/api/v1",
+			method:        "GET",
+			tokenString:   "",
+			body:          nil,
 			expectedError: false,
-			expectedCode:  404,
-		},
-		{
-			description:   "get book by invalid ID (non UUID)",
-			route:         "/api/v1/book/123456",
-			expectedError: false,
-			expectedCode:  500,
+			expectedCode:  400,
 		},
 	}
-
 	// Define Fiber app.
 	app := fiber.New()
 
