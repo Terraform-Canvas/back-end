@@ -2,8 +2,6 @@
 include .env
 APP_NAME = apiserver
 BUILD_DIR = $(PWD)/build
-MIGRATIONS_FOLDER = $(PWD)/platform/migrations
-DATABASE_URL = mysql://root:${DB_PASSWORD}@tcp(localhost:3306)/mysql?query
 
 clean:
 	rm -rf ./build
@@ -27,16 +25,7 @@ build: test
 run: swag build
 	$(BUILD_DIR)/$(APP_NAME)
 
-migrate.up:
-	migrate -path $(MIGRATIONS_FOLDER) -database "$(DATABASE_URL)" up
-
-migrate.down:
-	migrate -path $(MIGRATIONS_FOLDER) -database "$(DATABASE_URL)" down
-
-migrate.force:
-	migrate -path $(MIGRATIONS_FOLDER) -database "$(DATABASE_URL)" force $(version)
-
-docker.run: docker.network docker.mysql swag docker.fiber migrate.up
+docker.run: docker.network swag docker.fiber
 
 docker.network:
 	docker network inspect dev-network >/dev/null 2>&1 || \
@@ -52,27 +41,6 @@ docker.fiber: docker.fiber.build
 		-p 3000:3000 \
 		fiber
 
-docker.mysql:
-	docker run --rm -d \
-		--name cgapp-mysql \
-		--network dev-network \
-		-e MYSQL_ROOT_PASSWORD=${DB_PASSWORD} \
-		-e MYSQL_DATABASE=mysql \
-		-v ${HOME}/dev-mysql:/var/lib/mysql \
-		-p 3306:3306 \
-		mysql
-
-docker.postgres:
-	docker run --rm -d \
-		--name cgapp-postgres \
-		--network dev-network \
-		-e POSTGRES_USER=postgres \
-		-e POSTGRES_PASSWORD=password \
-		-e POSTGRES_DB=postgres \
-		-v ${HOME}/dev-postgres/data/:/var/lib/postgresql/data \
-		-p 5432:5432 \
-		postgres
-
 docker.redis:
 	docker run --rm -d \
 		--name cgapp-redis \
@@ -80,19 +48,13 @@ docker.redis:
 		-p 6379:6379 \
 		redis
 
-docker.stop: docker.stop.fiber docker.stop.mysql #docker.stop.postgres docker.stop.redis
+docker.stop: docker.stop.fiber
 
 docker.stop.fiber:
 	docker stop cgapp-fiber
 
-docker.stop.postgres:
-	docker stop cgapp-postgres
-
 docker.stop.redis:
 	docker stop cgapp-redis
-
-docker.stop.mysql:
-	docker stop cgapp-mysql
 
 swag:
 	swag init
