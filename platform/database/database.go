@@ -15,12 +15,13 @@ import (
 	"github.com/oracle/nosql-go-sdk/nosqldb/types"
 )
 
-func OCINoSQLConnection() {
+func OCINoSQLConnection() (*nosqldb.Client, error) {
 	client, err := createClient()
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	defer client.Close()
+	return client, nil
 }
 
 func createClient() (*nosqldb.Client, error) {
@@ -49,6 +50,7 @@ func createClient() (*nosqldb.Client, error) {
 	return client, nil
 }
 
+// sample oci method
 func putData(client *nosqldb.Client, tableName string) {
 	mapValues := types.ToMapValue("id", 1)
 	mapValues.Put("user_id", "test")
@@ -102,10 +104,9 @@ func getData(client *nosqldb.Client, tableName string) {
 
 func createTable(client *nosqldb.Client, tableName string) {
 	stmt := fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s ("+
-		"id LONG, "+
-		"user_id STRING, "+
+		"email STRING, "+
 		"password STRING, "+
-		"PRIMARY KEY(id))", tableName)
+		"PRIMARY KEY(email))", tableName)
 	tableReq := &nosqldb.TableRequest{
 		TableLimits: &nosqldb.TableLimits{
 			ReadUnits:  50,
