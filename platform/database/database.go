@@ -3,9 +3,10 @@ package database
 import (
 	"fmt"
 	"log"
-	"main/app/queries"
 	"os"
 	"time"
+
+	"main/app/queries"
 
 	"github.com/oracle/nosql-go-sdk/nosqldb/common"
 
