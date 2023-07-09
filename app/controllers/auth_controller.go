@@ -4,7 +4,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"log"
 	"main/app/models"
-	"main/app/queries"
 	"main/platform/database"
 )
 
@@ -22,8 +21,7 @@ func UserSignIn(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(err)
 	}
-	userQueries := queries.UserQueries{Client: db}
-	user, err := userQueries.GetUserByEmail(signIn.Email)
+	user, err := db.GetUserByEmail(signIn.Email)
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 			"error": true,

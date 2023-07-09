@@ -3,6 +3,7 @@ package database
 import (
 	"fmt"
 	"log"
+	"main/app/queries"
 	"os"
 	"time"
 
@@ -15,13 +16,19 @@ import (
 	"github.com/oracle/nosql-go-sdk/nosqldb/types"
 )
 
-func OCINoSQLConnection() (*nosqldb.Client, error) {
+type Queries struct {
+	*queries.UserQueries
+}
+
+func OCINoSQLConnection() (*Queries, error) {
 	client, err := createClient()
 	if err != nil {
 		return nil, err
 	}
 	defer client.Close()
-	return client, nil
+	return &Queries{
+		UserQueries: &queries.UserQueries{client},
+	}, nil
 }
 
 func createClient() (*nosqldb.Client, error) {
@@ -32,7 +39,8 @@ func createClient() (*nosqldb.Client, error) {
 		os.Getenv("fingerprint"), os.Getenv("compartmentID"), os.Getenv("privateKeyFile"), &privateKeyPass)
 	if err != nil {
 		log.Println(err)
-		panic(err)
+		log.Println(os.Getenv("privateKeyFile"))
+		return nil, err
 	}
 	cfg := nosqldb.Config{
 		Mode:                  "cloud",
@@ -45,7 +53,7 @@ func createClient() (*nosqldb.Client, error) {
 	client, err := nosqldb.NewClient(cfg)
 	if err != nil {
 		log.Println(err)
-		panic(err)
+		return nil, err
 	}
 	return client, nil
 }
