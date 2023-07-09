@@ -2,6 +2,7 @@ package queries
 
 import (
 	"fmt"
+	"github.com/gofiber/fiber/v2"
 	"github.com/oracle/nosql-go-sdk/nosqldb"
 	"github.com/oracle/nosql-go-sdk/nosqldb/jsonutil"
 	"github.com/oracle/nosql-go-sdk/nosqldb/types"
@@ -23,7 +24,7 @@ func (q *UserQueries) GetUserByEmail(email string) (models.User, error) {
 	getRes, err := q.Get(getReq)
 	if err != nil {
 		log.Println(err)
-		panic(err)
+		return user, err
 	}
 	if getRes.RowExists() {
 		data, err := jsonutil.ToObject(getRes.ValueAsJSON())
@@ -33,10 +34,13 @@ func (q *UserQueries) GetUserByEmail(email string) (models.User, error) {
 			return user, err
 		}
 		user.Email = fmt.Sprintf("%v", data["email"])
-		user.Email = fmt.Sprintf("%v", data["password"])
+		user.Password = fmt.Sprintf("%v", data["password"])
 		return user, nil
 
 	}
 	log.Println("The row doesn't exist.")
-	return user, fmt.Errorf("The row doesn't exist.")
+	return user, &fiber.Error{
+		Code:    404,
+		Message: "The data doesn't exist",
+	}
 }
