@@ -1,8 +1,10 @@
 package controllers
 
 import (
-	"github.com/gofiber/fiber/v2"
 	"log"
+
+	"github.com/gofiber/fiber/v2"
+
 	"main/app/models"
 	"main/platform/database"
 )
@@ -15,17 +17,23 @@ func UserSignIn(c *fiber.Ctx) error {
 
 	if err := c.BodyParser(signIn); err != nil {
 		log.Println(signIn)
-		return c.Status(fiber.StatusBadRequest).JSON(err)
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": true,
+			"msg":   err,
+		})
 	}
 	db, err := database.OCINoSQLConnection()
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": true,
+			"msg":   err,
+		})
 	}
 	user, err := db.GetUserByEmail(signIn.Email)
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 			"error": true,
-			"msg":   "user with the given email is not found",
+			"msg":   err,
 		})
 	}
 	if user.Password != signIn.Password {
@@ -34,11 +42,12 @@ func UserSignIn(c *fiber.Ctx) error {
 			"msg":   "user with the given password is not correct",
 		})
 	}
-	return c.JSON(fiber.Map{
-		"authInfo": map[string]string{
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"authInfo": fiber.Map{
 			"accessToken":  "testAccess",
 			"refreshToken": "testRefresh",
 		},
+		"name": user.Name,
 	})
 }
 

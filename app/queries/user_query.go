@@ -2,11 +2,13 @@ package queries
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/oracle/nosql-go-sdk/nosqldb"
 	"github.com/oracle/nosql-go-sdk/nosqldb/jsonutil"
 	"github.com/oracle/nosql-go-sdk/nosqldb/types"
-	"log"
+
 	"main/app/models"
 )
 
@@ -33,8 +35,10 @@ func (q *UserQueries) GetUserByEmail(email string) (models.User, error) {
 			log.Println(err)
 			return user, err
 		}
+		user.Name = fmt.Sprintf("%v", data["name"])
 		user.Email = fmt.Sprintf("%v", data["email"])
 		user.Password = fmt.Sprintf("%v", data["password"])
+		user.RefreshToken = fmt.Sprintf("%v", data["refreshToken"])
 		return user, nil
 
 	}
