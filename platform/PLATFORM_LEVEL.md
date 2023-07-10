@@ -5,3 +5,4 @@
 - `./platform/cache` folder with in-memory cache setup functions
 - `./platform/database` folder with database configuration
 - `./platform/migrations` folder with migration files (used with [golang-migrate/migrate](https://github.com/golang-migrate/migrate) tool)
+- `./platform/terraform` folder with terraform modules
