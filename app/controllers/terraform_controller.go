@@ -9,19 +9,22 @@ import (
 //Description Merge module tf file and Add in user folder
 //Summary merge module tf file and add in user folder
 //Tags Env
-//Param usermail path string true "user mail"
+//Param email path string true "user email"
 //Success 200 {string} status "ok"
 
-// @Router /v1/terraform/merge/{usermail} [post]
+// @Router /v1/terraform/merge/{email} [post]
 func MergeEnvTf(c *fiber.Ctx) error {
 	var data []map[string]interface{}
 	if err := c.BodyParser(&data); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(err)
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": true,
+			"msg": err,
+		})
 	}
 
-	usermail := c.Params("usermail")
+	email := c.Params("email")
 
-	err := services.MergeEnvTf(usermail, data)
+	err := services.MergeEnvTf(email, data)
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 			"error": true,
@@ -29,19 +32,21 @@ func MergeEnvTf(c *fiber.Ctx) error {
 		})
 	}
 
-	return c.Status(fiber.StatusOK).SendString(usermail)
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"error": false,
+	})
 }
 
-// @Router /v1/terraform/tfvars/{usermail} [post]
+// @Router /v1/terraform/tfvars/{email} [post]
 func CreateTfvars(c *fiber.Ctx) error {
 	var data []map[string]interface{}
 	if err := c.BodyParser(&data); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(err)
 	}
 
-	usermail := c.Params("usermail")
+	email := c.Params("email")
 
-	err := services.CreateTfvars(usermail, data)
+	err := services.CreateTfvars(email, data)
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 			"error": true,
@@ -49,13 +54,15 @@ func CreateTfvars(c *fiber.Ctx) error {
 		})
 	}
 
-	return c.Status(fiber.StatusOK).SendString(usermail)
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"error": false,
+	})
 }
 
-// @Router /v1/terraform/apply/{usermail} [post]
+// @Router /v1/terraform/apply/{email} [post]
 func ApplyEnvTf(c *fiber.Ctx) error {
-	usermail := c.Params("usermail")
-	result, err := services.ApplyTerraform(usermail)
+	email := c.Params("email")
+	result, err := services.ApplyTerraform(email)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": true,
@@ -64,6 +71,7 @@ func ApplyEnvTf(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"error": false,
 		"msg": result,
 	})
 }

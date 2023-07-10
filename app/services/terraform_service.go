@@ -16,7 +16,7 @@ import (
 	"github.com/hashicorp/hcl"
 )
 
-func MergeEnvTf(usermail string, data []map[string]interface{}) error {
+func MergeEnvTf(email string, data []map[string]interface{}) error {
 	for _, item := range data {
 		folderPath := item["type"].(string)
 
@@ -32,12 +32,12 @@ func MergeEnvTf(usermail string, data []map[string]interface{}) error {
 			return err
 		}
 
-		userMainPath := filepath.Join("usertf", usermail, "main.tf")
+		userMainPath := filepath.Join("usertf", email, "main.tf")
 		if err := AppendFile(userMainPath, mainContent); err != nil {
 			return err
 		}
 
-		userVarPath := filepath.Join("usertf", usermail, "variables.tf")
+		userVarPath := filepath.Join("usertf", email, "variables.tf")
 		if err := AppendFile(userVarPath, varContent); err != nil {
 			return err
 		}
@@ -63,9 +63,9 @@ func AppendFile(filePath string, content []byte) error{
 	return nil
 }
 
-func CreateTfvars(usermail string, data []map[string]interface{}) error {
+func CreateTfvars(email string, data []map[string]interface{}) error {
 	var v map[string]interface{}
-	variablesFile := filepath.Join("usertf", usermail, "variables.tf")
+	variablesFile := filepath.Join("usertf", email, "variables.tf")
 	existingVariables, err := ioutil.ReadFile(variablesFile)
 	if err != nil {
 		return err
@@ -141,7 +141,7 @@ func CreateTfvars(usermail string, data []map[string]interface{}) error {
 		tfvars.WriteString("\n")
 	}
 
-	writePath := filepath.Join("usertf", usermail, "terraform.tfvars")
+	writePath := filepath.Join("usertf", email, "terraform.tfvars")
 	err = ioutil.WriteFile(writePath, []byte(tfvars.String()), 0644)
 	if err != nil {
 		return err
@@ -184,8 +184,8 @@ func CalcSubnet(req *models.SubnetRequest) []string{
 	return subnetCidrs
 }
 
-func ApplyTerraform(usermail string) (string, error) {
-	envPath := filepath.Join("usertf", usermail)
+func ApplyTerraform(email string) (string, error) {
+	envPath := filepath.Join("usertf", email)
 	err := os.Chdir(envPath)
 	if err != nil {
 		return "", err
