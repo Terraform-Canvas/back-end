@@ -24,26 +24,6 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/v1/env/{username}": {
-            "post": {
-                "responses": {}
-            }
-        },
-        "/v1/jsontotf": {
-            "post": {
-                "responses": {}
-            }
-        },
-        "/v1/s3/download/{username}": {
-            "get": {
-                "responses": {}
-            }
-        },
-        "/v1/s3/upload/{username}": {
-            "post": {
-                "responses": {}
-            }
-        },
         "/v1/user/sign/in": {
             "post": {
                 "description": "Auth user and return access and refresh token.",
