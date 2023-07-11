@@ -38,7 +38,7 @@ docker.fiber: docker.fiber.build
 	docker run --rm -d \
 		--name cgapp-fiber \
 		--network dev-network \
-		-p 3000:3000 \
+		-p 8000:8000 \
 		fiber
 
 docker.redis:
