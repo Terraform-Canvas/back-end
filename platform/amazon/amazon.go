@@ -2,41 +2,32 @@ package amazon
 
 import (
 	"context"
-	"log"
-	"os"
 	"io"
+	"os"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/joho/godotenv"
 )
 
-func LoadEnv(){
-	err := godotenv.Load(".env")
-	if err != nil{
-		log.Fatal("Error loading .env file:", err)
-	}
-}
-
 type AWSConfig struct {
-	AccessKey string
-	SecretKey string
-	Region string
+	AccessKey  string
+	SecretKey  string
+	Region     string
 	BucketName string
 }
 
 func GetAWSConfig() AWSConfig {
 	return AWSConfig{
-		AccessKey: os.Getenv("AWS_ACCESS_KEY"),
-		SecretKey: os.Getenv("AWS_SECRET_KEY"),
-		Region: os.Getenv("AWS_REGION"),
+		AccessKey:  os.Getenv("AWS_ACCESS_KEY"),
+		SecretKey:  os.Getenv("AWS_SECRET_KEY"),
+		Region:     os.Getenv("AWS_REGION"),
 		BucketName: os.Getenv("AWS_BUCKET_NAME"),
 	}
 }
 
-func GetS3Client() (*s3.Client){
+func GetS3Client() *s3.Client {
 	cfg, err := config.LoadDefaultConfig(context.TODO(),
 		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(GetAWSConfig().AccessKey, GetAWSConfig().SecretKey, "")),
 		config.WithRegion(GetAWSConfig().Region),

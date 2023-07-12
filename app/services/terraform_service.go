@@ -46,17 +46,17 @@ func MergeEnvTf(email string, data []map[string]interface{}) error {
 	return nil
 }
 
-func AppendFile(filePath string, content []byte) error{
+func AppendFile(filePath string, content []byte) error {
 	exist, err := ioutil.ReadFile(filePath)
-	if err != nil{
-		return ioutil.WriteFile(filePath, content, 0644)
+	if err != nil {
+		return ioutil.WriteFile(filePath, content, 0o644)
 	}
-	
-	newContent := append(exist, []byte("\n")...)
-	newContent = append(newContent,content ...)
 
-	err = ioutil.WriteFile(filePath, newContent, 0644)
-	if err != nil{
+	newContent := append(exist, []byte("\n")...)
+	newContent = append(newContent, content...)
+
+	err = ioutil.WriteFile(filePath, newContent, 0o644)
+	if err != nil {
 		return nil
 	}
 
@@ -142,7 +142,7 @@ func CreateTfvars(email string, data []map[string]interface{}) error {
 	}
 
 	writePath := filepath.Join("usertf", email, "terraform.tfvars")
-	err = ioutil.WriteFile(writePath, []byte(tfvars.String()), 0644)
+	err = ioutil.WriteFile(writePath, []byte(tfvars.String()), 0o644)
 	if err != nil {
 		return err
 	}
@@ -150,7 +150,7 @@ func CreateTfvars(email string, data []map[string]interface{}) error {
 	return nil
 }
 
-func CalcSubnet(req *models.SubnetRequest) []string{
+func CalcSubnet(req *models.SubnetRequest) []string {
 	vpcCidr := req.VpcCidr
 	subnetCnt := req.SubnetCnt
 
