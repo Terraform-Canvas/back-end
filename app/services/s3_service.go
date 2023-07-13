@@ -1,14 +1,16 @@
 package services
 
 import (
-	"os"
-	"io"
-	"context"
 	"archive/zip"
+	"context"
+	"io"
+	"os"
 	"path/filepath"
-	"main/platform/amazon"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+
+	"main/platform/amazon"
 )
 
 func UploadToS3(email string) error {
@@ -35,7 +37,6 @@ func UploadToS3(email string) error {
 	return err
 }
 
-
 func DownloadToZip(email string) (string, error) {
 	client := amazon.GetS3Client()
 
@@ -49,7 +50,7 @@ func DownloadToZip(email string) (string, error) {
 
 	tempDir := os.TempDir()
 	downloadDir := filepath.Join(tempDir, email)
-	if err := os.MkdirAll(downloadDir, 0755); err != nil {
+	if err := os.MkdirAll(downloadDir, 0o755); err != nil {
 		return "", err
 	}
 

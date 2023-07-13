@@ -2,10 +2,9 @@ package controllers
 
 import (
 	"main/app/services"
-	
+
 	"github.com/gofiber/fiber/v2"
 )
-
 
 // @Router /v1/s3/upload/{email} [post]
 func UploadHandler(c *fiber.Ctx) error {

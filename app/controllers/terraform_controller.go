@@ -1,16 +1,16 @@
 package controllers
 
 import (
-	"main/app/services"
 	"github.com/gofiber/fiber/v2"
+	"main/app/services"
 )
 
-//accept랑 produce는 (swagger에서의) 애매해서 생략(s3에서도 생략되어 있음)
-//Description Merge module tf file and Add in user folder
-//Summary merge module tf file and add in user folder
-//Tags Env
-//Param email path string true "user email"
-//Success 200 {string} status "ok"
+// accept랑 produce는 (swagger에서의) 애매해서 생략(s3에서도 생략되어 있음)
+// Description Merge module tf file and Add in user folder
+// Summary merge module tf file and add in user folder
+// Tags Env
+// Param email path string true "user email"
+// Success 200 {string} status "ok"
 
 // @Router /v1/terraform/merge/{email} [post]
 func MergeEnvTf(c *fiber.Ctx) error {
@@ -18,7 +18,7 @@ func MergeEnvTf(c *fiber.Ctx) error {
 	if err := c.BodyParser(&data); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": true,
-			"msg": err,
+			"msg":   err,
 		})
 	}
 
@@ -28,7 +28,7 @@ func MergeEnvTf(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 			"error": true,
-			"msg": err,
+			"msg":   err,
 		})
 	}
 
@@ -50,7 +50,7 @@ func CreateTfvars(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 			"error": true,
-			"msg": err,
+			"msg":   err,
 		})
 	}
 
@@ -66,12 +66,12 @@ func ApplyEnvTf(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": true,
-			"msg": err,
+			"msg":   err,
 		})
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"error": false,
-		"msg": result,
+		"msg":   result,
 	})
 }

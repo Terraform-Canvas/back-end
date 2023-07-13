@@ -7,3 +7,9 @@ type User struct {
 	Password     string `json:"password" validate:"required,lte=255"`
 	RefreshToken string `json:"refreshToken"`
 }
+
+type UserKey struct {
+	Email     string `json:"email"`
+	AccessKey string `json:"accessKey"`
+	SecretKey string `json:"secretKey"`
+}
