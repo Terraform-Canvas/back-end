@@ -24,7 +24,7 @@ func MergeEnvTf(c *fiber.Ctx) error {
 
 	err := services.InitializeFolder(userFolderPath)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": true,
 			"msg":   err,
 		})
