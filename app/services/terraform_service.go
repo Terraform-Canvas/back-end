@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -16,7 +17,20 @@ import (
 	"github.com/hashicorp/hcl"
 )
 
-func MergeEnvTf(email string, data []map[string]interface{}) error {
+func InitializeFolder(folderPath string) error {
+	err := os.RemoveAll(folderPath)
+	if err != nil {
+		return err
+	}
+	err = os.MkdirAll(folderPath, os.ModePerm)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func MergeEnvTf(userFolderPath string, data []map[string]interface{}) error {
 	for _, item := range data {
 		folderPath := item["type"].(string)
 
@@ -32,12 +46,12 @@ func MergeEnvTf(email string, data []map[string]interface{}) error {
 			return err
 		}
 
-		userMainPath := filepath.Join("usertf", email, "main.tf")
+		userMainPath := filepath.Join(userFolderPath, "main.tf")
 		if err := AppendFile(userMainPath, mainContent); err != nil {
 			return err
 		}
 
-		userVarPath := filepath.Join("usertf", email, "variables.tf")
+		userVarPath := filepath.Join(userFolderPath, "variables.tf")
 		if err := AppendFile(userVarPath, varContent); err != nil {
 			return err
 		}
@@ -52,7 +66,7 @@ func AppendFile(filePath string, content []byte) error {
 		return ioutil.WriteFile(filePath, content, 0o644)
 	}
 
-	newContent := append(exist, []byte("\n")...)
+	newContent := append(exist, []byte("\n\n")...)
 	newContent = append(newContent, content...)
 
 	err = ioutil.WriteFile(filePath, newContent, 0o644)
@@ -63,15 +77,18 @@ func AppendFile(filePath string, content []byte) error {
 	return nil
 }
 
-func CreateTfvars(email string, data []map[string]interface{}) error {
+func CreateTfvars(userFolderPath string, data []map[string]interface{}) error {
 	var v map[string]interface{}
-	variablesFile := filepath.Join("usertf", email, "variables.tf")
+	variablesFile := filepath.Join(userFolderPath, "variables.tf")
 	existingVariables, err := ioutil.ReadFile(variablesFile)
 	if err != nil {
 		return err
 	}
 
-	err = hcl.Unmarshal(existingVariables, &v)
+	re := regexp.MustCompile(`\{[^{}]*\}`)
+	fileContent := re.ReplaceAllString(string(existingVariables), "{}")
+
+	err = hcl.Unmarshal([]byte(fileContent), &v)
 	if err != nil {
 		return err
 	}
@@ -141,7 +158,7 @@ func CreateTfvars(email string, data []map[string]interface{}) error {
 		tfvars.WriteString("\n")
 	}
 
-	writePath := filepath.Join("usertf", email, "terraform.tfvars")
+	writePath := filepath.Join(userFolderPath, "terraform.tfvars")
 	err = ioutil.WriteFile(writePath, []byte(tfvars.String()), 0o644)
 	if err != nil {
 		return err
