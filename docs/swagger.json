@@ -16,75 +16,39 @@
     },
     "basePath": "/api",
     "paths": {
+        "/v1/s3/download": {
+            "get": {
+                "responses": {}
+            }
+        },
+        "/v1/s3/upload": {
+            "post": {
+                "responses": {}
+            }
+        },
+        "/v1/terraform/apply": {
+            "post": {
+                "responses": {}
+            }
+        },
+        "/v1/terraform/merge": {
+            "post": {
+                "responses": {}
+            }
+        },
+        "/v1/user/key": {
+            "post": {
+                "responses": {}
+            }
+        },
         "/v1/user/sign/in": {
             "post": {
-                "description": "Auth user and return access and refresh token.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "User"
-                ],
-                "summary": "auth user and return access and refresh token",
-                "parameters": [
-                    {
-                        "description": "User Email",
-                        "name": "email",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "description": "User Password",
-                        "name": "password",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "ok",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
+                "responses": {}
             }
         },
         "/v1/user/sign/out": {
             "post": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "De-authorize user and delete refresh token from Redis.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "User"
-                ],
-                "summary": "de-authorize user and delete refresh token from Redis",
-                "responses": {
-                    "204": {
-                        "description": "ok",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
+                "responses": {}
             }
         }
     },
