@@ -1,24 +1,25 @@
 package configs
 
 import (
-	"os"
 	"context"
+	"os"
+
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
 type AWSConfig struct {
-	AccessKey  string
-	SecretKey  string
-	Region     string
+	AccessKey string
+	SecretKey string
+	Region    string
 }
 
 func GetAWSConfig() AWSConfig {
 	return AWSConfig{
-		AccessKey:  os.Getenv("AWS_ACCESS_KEY"),
-		SecretKey:  os.Getenv("AWS_SECRET_KEY"),
-		Region:     os.Getenv("AWS_REGION"),
+		AccessKey: os.Getenv("AWS_ACCESS_KEY"),
+		SecretKey: os.Getenv("AWS_SECRET_KEY"),
+		Region:    os.Getenv("AWS_REGION"),
 	}
 }
 
