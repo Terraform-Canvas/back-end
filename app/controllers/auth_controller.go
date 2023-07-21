@@ -8,6 +8,7 @@ import (
 	"os"
 	"strings"
 
+	"main/pkg/utils"
 	"main/platform/OCI"
 
 	"github.com/gofiber/fiber/v2"
@@ -49,12 +50,30 @@ func UserSignIn(c *fiber.Ctx) error {
 			"msg":   "user with the given password is not correct",
 		})
 	}
+	tokens, err := utils.GenerateNewTokens(user.Email)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": true,
+			"msg":   "Failed to generate tokens",
+		})
+	}
+
+	user.RefreshToken = tokens.Refresh
+	err = db.UpdateUser(user)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": true,
+			"msg":   "Failed to update user refreshToken",
+		})
+	}
+
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"authInfo": fiber.Map{
-			"accessToken":  "testAccess",
-			"refreshToken": "testRefresh",
+			"accessToken":  tokens.Access,
+			"refreshToken": tokens.Refresh,
 		},
-		"name": user.Name,
+		"name":  user.Name,
+		"email": user.Email,
 	})
 }
 
