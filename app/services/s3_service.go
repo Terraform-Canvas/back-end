@@ -2,20 +2,31 @@ package services
 
 import (
 	"archive/zip"
-	"context"
 	"io"
 	"os"
 	"path/filepath"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/s3"
-
 	"main/platform/amazon"
 )
 
-func UploadToS3(email string) error {
+func ConfirmBucketName(bucketEmail string) (string, error) {
+	bucketName := "terraform-canvas-" + bucketEmail
+
+	exists, err := amazon.CheckBucketExists(bucketName)
+	if err != nil {
+		return "", err
+	}
+	if !exists {
+		err = amazon.CreateBucket(bucketName)
+		if err != nil {
+			return "", err
+		}
+	}
+	return bucketName, err
+}
+
+func UploadToS3(email string, bucketName string) error {
 	uploadDir := filepath.Join("usertf", email)
-	client := amazon.GetS3Client()
 
 	err := filepath.Walk(uploadDir, func(path string, info os.FileInfo, errWalk error) error {
 		if !info.IsDir() {
@@ -26,7 +37,7 @@ func UploadToS3(email string) error {
 			defer file.Close()
 
 			key := email + "/" + info.Name()
-			err = amazon.UploadToS3(client, key, file)
+			err = amazon.UploadToS3(bucketName, key, file)
 			if err != nil {
 				return err
 			}
@@ -37,17 +48,7 @@ func UploadToS3(email string) error {
 	return err
 }
 
-func DownloadToZip(email string) (string, error) {
-	client := amazon.GetS3Client()
-
-	resp, err := client.ListObjectsV2(context.TODO(), &s3.ListObjectsV2Input{
-		Bucket: aws.String(amazon.GetAWSConfig().BucketName),
-		Prefix: aws.String(email + "/"),
-	})
-	if err != nil {
-		return "", err
-	}
-
+func DownloadToZip(email string, bucketName string) (string, error) {
 	tempDir := os.TempDir()
 	downloadDir := filepath.Join(tempDir, email)
 	if err := os.MkdirAll(downloadDir, 0o755); err != nil {
@@ -63,11 +64,15 @@ func DownloadToZip(email string) (string, error) {
 
 	zipWriter := zip.NewWriter(zipFile)
 
-	for _, obj := range resp.Contents {
+	contents, err := amazon.ListObjects("terraform-canvas")
+	if err != nil {
+		return "", err
+	}
+	for _, obj := range contents {
 		key := *obj.Key
 		filename := filepath.Join(downloadDir, filepath.Base(key))
 
-		err = amazon.DownloadFile(client, key, filename)
+		err = amazon.DownloadFile(bucketName, key, filename)
 		if err != nil {
 			return "", err
 		}
