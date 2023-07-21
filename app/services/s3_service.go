@@ -64,7 +64,7 @@ func DownloadToZip(email string, bucketName string) (string, error) {
 
 	zipWriter := zip.NewWriter(zipFile)
 
-	contents, err := amazon.ListObjects("terraform-canvas")
+	contents, err := amazon.ListObjects(bucketName)
 	if err != nil {
 		return "", err
 	}
