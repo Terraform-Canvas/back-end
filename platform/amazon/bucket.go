@@ -34,11 +34,11 @@ func CheckBucketExists(bucketName string) (bool, error) {
 		Bucket: &bucketName,
 	})
 	if err != nil {
-		var notFoundErr *types.NoSuchBucket
-		if !errors.As(err, &notFoundErr) {
-			return false, fmt.Errorf("failed to check bucket existence: %v", err)
+		var notFoundErr *types.NotFound
+		if errors.As(err, &notFoundErr) {
+			return false, nil
 		}
-		return false, nil
+		return false, fmt.Errorf("failed to check bucket existence: %v", err)
 	}
 
 	return true, nil
