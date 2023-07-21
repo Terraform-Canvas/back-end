@@ -1,16 +1,35 @@
 package controllers
 
 import (
+	"log"
+	"strings"
+
 	"main/app/services"
+	"main/pkg/utils"
 
 	"github.com/gofiber/fiber/v2"
 )
 
-// @Router /v1/s3/upload/{email} [post]
+// @Router /v1/s3/upload [post]
 func UploadHandler(c *fiber.Ctx) error {
-	email := c.Params("email")
+	email, err := utils.GetEmailFromToken(c)
+	log.Println(email)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": true,
+			"msg":   err,
+		})
+	}
 
-	err := services.UploadToS3(email)
+	bucketName, err := services.ConfirmBucketName(strings.Replace(email, "@", ".", 1))
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": true,
+			"msg":   err,
+		})
+	}
+
+	err = services.UploadToS3(email, bucketName)
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 			"error": true,
@@ -20,14 +39,23 @@ func UploadHandler(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"error": false,
+		"msg":   "upload user tf folder success",
 	})
 }
 
-// @Router /v1/s3/download/{email} [get]
+// @Router /v1/s3/download [get]
 func DownloadHandler(c *fiber.Ctx) error {
-	email := c.Params("email")
+	email, err := utils.GetEmailFromToken(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": true,
+			"msg":   err,
+		})
+	}
 
-	zipFilePath, err := services.DownloadToZip(email)
+	bucketName := "terraform-canvas-" + strings.Replace(email, "@", ".", 1)
+
+	zipFilePath, err := services.DownloadToZip(email, bucketName)
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 			"error": true,

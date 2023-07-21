@@ -11,9 +11,9 @@ func PublicRoutes(a *fiber.App) {
 	route := a.Group("/api/v1")
 	// Routes for POST method:
 	route.Post("/login/new", controllers.UserSignIn)
-	route.Post("/terraform/usertf/:email", controllers.MergeEnvTf)
-	route.Post("/terraform/apply/:email", controllers.ApplyEnvTf)
-	route.Post("/s3/upload/:email", controllers.UploadHandler)
-	route.Get("/s3/download/:email", controllers.DownloadHandler)
+	route.Post("/terraform/usertf", controllers.MergeEnvTf)
+	route.Post("/terraform/apply", controllers.ApplyEnvTf)
+	route.Post("/s3/upload", controllers.UploadHandler)
+	route.Get("/s3/download", controllers.DownloadHandler)
 	route.Post("/user/key", controllers.UserKeySave)
 }
