@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"main/app/models"
 	"main/app/queries"
 
 	"github.com/oracle/nosql-go-sdk/nosqldb/common"
@@ -57,6 +58,24 @@ func createClient() (*nosqldb.Client, error) {
 		return nil, err
 	}
 	return client, nil
+}
+
+func (q *Queries) UpdateUser(user models.User) error {
+	mapValues := types.ToMapValue("email", user.Email)
+	mapValues.Put("password", user.Password)
+	mapValues.Put("name", user.Name)
+	mapValues.Put("refreshToken", user.RefreshToken)
+
+	putReq := &nosqldb.PutRequest{
+		TableName: "userTable",
+		Value:     mapValues,
+	}
+
+	_, err := q.Put(putReq)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // sample oci method
