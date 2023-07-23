@@ -13,7 +13,7 @@ func FiberMiddleware(a *fiber.App) {
 		// Add CORS to each route.
 		cors.New(cors.Config{
 			AllowOrigins:     "http://localhost:3000",
-			AllowHeaders:     "Origin, Content-Type, Accept, x-refresh-token, x-access-token",
+			AllowHeaders:     "Origin, Content-Type, Accept, Authorization, X-refresh-token",
 			AllowCredentials: true,
 		}),
 		// Add simple logger.
