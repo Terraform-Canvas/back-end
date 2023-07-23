@@ -76,6 +76,45 @@ func UserSignIn(c *fiber.Ctx) error {
 	})
 }
 
+// UserSignOut method to de-authorize user and delete refresh token from Redis.
+// @Router /v1/logout [post]
+func UserSignOut(c *fiber.Ctx) error {
+	email, err := utils.GetEmailFromToken(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": true,
+			"msg":   err,
+		})
+	}
+	db, err := database.OCINoSQLConnection()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": true,
+			"msg":   err,
+		})
+	}
+	user, err := db.GetUserByEmail(email)
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error": true,
+			"msg":   err,
+		})
+	}
+	user.RefreshToken = ""
+	err = db.UpdateUser(user)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": true,
+			"msg":   "Failed to update user refreshToken",
+		})
+	}
+	// Return status 204 no content.
+	return c.Status(fiber.StatusNoContent).JSON(fiber.Map{
+		"error": false,
+		"msg":   "logout success",
+	})
+}
+
 // @Router /v1/login/refresh [post]
 func UserRefresh(c *fiber.Ctx) error {
 	now := time.Now().Unix()
