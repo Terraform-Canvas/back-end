@@ -16,4 +16,6 @@ func PublicRoutes(a *fiber.App) {
 	route.Post("/s3/upload", controllers.UploadHandler)
 	route.Get("/s3/download", controllers.DownloadHandler)
 	route.Post("/user/key", controllers.UserKeySave)
+	route.Get("/ec2/instanceTypes", controllers.EC2InstanceTypes)
+	route.Get("/ec2/ami", controllers.EC2Images)
 }
