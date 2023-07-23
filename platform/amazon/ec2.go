@@ -2,7 +2,6 @@ package amazon
 
 import (
 	"context"
-
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"main/pkg/configs"
@@ -44,8 +43,9 @@ func GetEC2AMI() []types.Image {
 
 func pagingAMI(client *ec2.Client, nextToken *string, ec2Images *EC2Images) {
 	filterType := "owner-alias"
-	publicFilterType := "is-public"
+	publicFilter := "is-public"
 	ownerName := "amazon"
+	filterName := "name"
 	resp, err := client.DescribeImages(context.TODO(), &ec2.DescribeImagesInput{
 		NextToken: nextToken,
 		Filters: []types.Filter{
@@ -54,8 +54,12 @@ func pagingAMI(client *ec2.Client, nextToken *string, ec2Images *EC2Images) {
 				Values: []string{ownerName},
 			},
 			{
-				Name:   &publicFilterType,
+				Name:   &publicFilter,
 				Values: []string{"true"},
+			},
+			{
+				Name:   &filterName,
+				Values: []string{`*Amazon Linux 2*`, `*Ubuntu*`},
 			},
 		},
 	})
