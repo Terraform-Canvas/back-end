@@ -4,9 +4,9 @@ import (
 	"bufio"
 	"encoding/csv"
 	"fmt"
-	"log"
 	"os"
 	"strings"
+	"time"
 
 	"main/pkg/utils"
 	"main/platform/OCI"
@@ -18,13 +18,12 @@ import (
 )
 
 // UserSignIn method to auth user and return access and refresh tokens.
-// @Router /v1/user/sign/in [post]
+// @Router /v1/login/new [post]
 func UserSignIn(c *fiber.Ctx) error {
 	// Return status 200 OK.
 	signIn := &models.SignIn{}
 
 	if err := c.BodyParser(signIn); err != nil {
-		log.Println(signIn)
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": true,
 			"msg":   err,
@@ -78,29 +77,148 @@ func UserSignIn(c *fiber.Ctx) error {
 }
 
 // UserSignOut method to de-authorize user and delete refresh token from Redis.
-// @Router /v1/user/sign/out [post]
+// @Router /v1/logout [post]
 func UserSignOut(c *fiber.Ctx) error {
+	email, err := utils.GetEmailFromToken(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": true,
+			"msg":   err,
+		})
+	}
+	db, err := database.OCINoSQLConnection()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": true,
+			"msg":   err,
+		})
+	}
+	user, err := db.GetUserByEmail(email)
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error": true,
+			"msg":   err,
+		})
+	}
+	user.RefreshToken = ""
+	err = db.UpdateUser(user)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": true,
+			"msg":   "Failed to update user refreshToken",
+		})
+	}
 	// Return status 204 no content.
-	return c.SendStatus(fiber.StatusNoContent)
+	return c.Status(fiber.StatusNoContent).JSON(fiber.Map{
+		"error": false,
+		"msg":   "logout success",
+	})
+}
+
+// @Router /v1/login/refresh [post]
+func UserRefresh(c *fiber.Ctx) error {
+	now := time.Now().Unix()
+
+	refreshToken := c.Get("X-refresh-token")
+	expiresRefreshToken, err := utils.ParseRefreshToken(refreshToken)
+	if err != nil {
+		// Return status 400 and error message.
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": true,
+			"msg":   err,
+		})
+	}
+	// 시간 확인
+	if now < expiresRefreshToken {
+		email, err := utils.GetEmailFromToken(c)
+		if err != nil {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": true,
+				"msg":   err,
+			})
+		}
+		// 토큰 재발급
+		tokens, err := utils.GenerateNewTokens(email)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": true,
+				"msg":   "Failed to generate tokens",
+			})
+		}
+		db, err := database.OCINoSQLConnection()
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": true,
+				"msg":   err,
+			})
+		}
+		user, err := db.GetUserByEmail(email)
+		if err != nil {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+				"error": true,
+				"msg":   err,
+			})
+		}
+		user.RefreshToken = tokens.Refresh
+		// db 업데이트
+		err = db.UpdateUser(user)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": true,
+				"msg":   "Failed to update user refreshToken",
+			})
+		}
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"authInfo": fiber.Map{
+				"accessToken":  tokens.Access,
+				"refreshToken": tokens.Refresh,
+			},
+		})
+	} else {
+		// 세션 만료 고지
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": true,
+			"msg":   "unauthorized, your session was ended earlier",
+		})
+	}
 }
 
 // UserKeySave는 key를 bucket에 업로드하고 env로 해당 키를 등록하는 함수
 // @Router /v1/user/key [post]
 func UserKeySave(c *fiber.Ctx) error {
+	now := time.Now().Unix()
+	claims, err := utils.ExtractTokenMetadata(c)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": true,
+			"msg":   err.Error(),
+		})
+	}
+	expires := claims.Expires
+	if now > expires {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": true,
+			"msg":   "unauthorized, check expiration time of your token",
+		})
+	}
 	userKey := &models.UserKey{}
 	if err := c.BodyParser(userKey); err != nil {
-		log.Println(userKey)
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": true,
 			"msg":   err,
 		})
 	}
 	filePath := fmt.Sprintf("./%s.csv", userKey.Email)
-	createFile(filePath, userKey.AccessKey, userKey.SecretKey)
+	err = createFile(filePath, userKey.AccessKey, userKey.SecretKey)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": true,
+			"msg":   err,
+		})
+	}
 	file, err := os.Open(filePath)
 	fi, err := file.Stat()
 	if err != nil {
-		log.Println(err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": true,
 			"msg":   err,
@@ -111,7 +229,6 @@ func UserKeySave(c *fiber.Ctx) error {
 		os.Remove(filePath)
 	}()
 	if err != nil {
-		log.Println(err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": true,
 			"msg":   err,
@@ -123,7 +240,6 @@ func UserKeySave(c *fiber.Ctx) error {
 	os.Setenv("AWS_ACCESS_KEY", result[0])
 	os.Setenv("AWS_SECRET_KEY", result[1])
 	if err != nil {
-		log.Println(err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": true,
 			"msg":   err,
@@ -142,14 +258,15 @@ func deleteWithTrim(result []string) []string {
 	return result
 }
 
-func createFile(filePath string, accessKey string, secretKey string) {
+func createFile(filePath string, accessKey string, secretKey string) error {
 	file, err := os.Create(filePath)
 	if err != nil {
-		log.Println(err)
+		return err
 	}
 	// csv writer 생성
 	wr := csv.NewWriter(bufio.NewWriter(file))
 	// csv 내용 쓰기
 	wr.Write([]string{accessKey, secretKey})
 	wr.Flush()
+	return nil
 }

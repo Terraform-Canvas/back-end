@@ -3,6 +3,7 @@ package controllers
 import (
 	"log"
 	"strings"
+	"time"
 
 	"main/app/services"
 	"main/pkg/utils"
@@ -12,6 +13,21 @@ import (
 
 // @Router /v1/s3/upload [post]
 func UploadHandler(c *fiber.Ctx) error {
+	now := time.Now().Unix()
+	claims, err := utils.ExtractTokenMetadata(c)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": true,
+			"msg":   err.Error(),
+		})
+	}
+	expires := claims.Expires
+	if now > expires {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": true,
+			"msg":   "unauthorized, check expiration time of your token",
+		})
+	}
 	email, err := utils.GetEmailFromToken(c)
 	log.Println(email)
 	if err != nil {
@@ -45,6 +61,21 @@ func UploadHandler(c *fiber.Ctx) error {
 
 // @Router /v1/s3/download [get]
 func DownloadHandler(c *fiber.Ctx) error {
+	now := time.Now().Unix()
+	claims, err := utils.ExtractTokenMetadata(c)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": true,
+			"msg":   err.Error(),
+		})
+	}
+	expires := claims.Expires
+	if now > expires {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": true,
+			"msg":   "unauthorized, check expiration time of your token",
+		})
+	}
 	email, err := utils.GetEmailFromToken(c)
 	if err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
