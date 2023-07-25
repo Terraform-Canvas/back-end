@@ -1,6 +1,11 @@
-# vpc
+#vpc
 data "aws_availability_zones" "available" {
   state = "available"
+
+  filter {
+    name   = "zone-name"
+    values = ["ap-northeast-2a", "ap-northeast-2c"]
+  }
 }
 
 module "vpc" {
@@ -18,14 +23,4 @@ module "vpc" {
 
   enable_nat_gateway = true
   single_nat_gateway = false
-}
-
-data "aws_ami" "amazon-linux" {
-  most_recent = true
-  owners      = ["amazon"]
-
-  filter {
-    name   = "name"
-    values = ["amzn-ami-hvm-*-x86_64-ebs"]
-  }
 }

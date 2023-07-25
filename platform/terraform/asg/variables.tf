@@ -17,3 +17,7 @@ variable "asg_desired_capacity" {
 variable "asg_image_id" {
   type = string
 }
+
+variable "asg_image_id" {
+  type = string
+}
