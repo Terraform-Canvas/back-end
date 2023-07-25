@@ -3,7 +3,6 @@ package services
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"math"
 	"os"
 	"os/exec"
@@ -31,16 +30,23 @@ func InitializeFolder(folderPath string) error {
 }
 
 func MergeEnvTf(userFolderPath string, data []map[string]interface{}) error {
+	tfFilePath := filepath.Join("platform", "terraform")
+	sgFilePath := filepath.Join(tfFilePath, "sg")
+	sgFileContent, err := ioutil.ReadFile(sgFilePath)
+	if err != nil {
+		return err
+	}
+
 	for _, item := range data {
 		folderPath := item["type"].(string)
 
-		mainFilePath := filepath.Join("platform", "terraform", folderPath, "main.tf")
+		mainFilePath := filepath.Join(tfFilePath, folderPath, "main.tf")
 		mainContent, err := ioutil.ReadFile(mainFilePath)
 		if err != nil {
 			return err
 		}
 
-		varFilePath := filepath.Join("platform", "terraform", folderPath, "variables.tf")
+		varFilePath := filepath.Join(tfFilePath, folderPath, "variables.tf")
 		varContent, err := ioutil.ReadFile(varFilePath)
 		if err != nil {
 			return err
@@ -51,6 +57,15 @@ func MergeEnvTf(userFolderPath string, data []map[string]interface{}) error {
 			return err
 		}
 
+		re := regexp.MustCompile(`(?ms)module\s+"` + folderPath + `[^"]*"\s*{(?:[^{}]*{[^{}]*})*[^{}]*}`)
+		matches := re.FindAllString(string(sgFileContent), -1)
+
+		if len(matches) > 0 {
+			sgContent := strings.Join(matches, "\n\n")
+			if err := AppendFile(userMainPath, []byte(sgContent)); err != nil {
+				return err
+			}
+		}
 		userVarPath := filepath.Join(userFolderPath, "variables.tf")
 		if err := AppendFile(userVarPath, varContent); err != nil {
 			return err
@@ -201,11 +216,10 @@ func CalcSubnet(req *models.SubnetRequest) []string {
 	return subnetCidrs
 }
 
-func ApplyTerraform(email string) (string, error) {
-	envPath := filepath.Join("usertf", email)
-	err := os.Chdir(envPath)
+func ApplyTerraform(userFolderPath string) error {
+	err := os.Chdir(userFolderPath)
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	commands := []string{
@@ -213,17 +227,31 @@ func ApplyTerraform(email string) (string, error) {
 		"terraform init",
 		"terraform validate",
 		"terraform plan",
-		"terraform apply",
+		"terraform apply -auto-approve",
 	}
 
 	for _, command := range commands {
 		cmd := exec.Command(command)
 		err := cmd.Run()
 		if err != nil {
-			log.Println(err)
-			return "", err
+			return err
 		}
 	}
 
-	return "Commands executed successfully", nil
+	return nil
+}
+
+func DestroyTerraform(userFolderPath string) error {
+	err := os.Chdir(userFolderPath)
+	if err != nil {
+		return err
+	}
+
+	cmd := exec.Command("terraform destroy -auto-approve")
+	err = cmd.Run()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
