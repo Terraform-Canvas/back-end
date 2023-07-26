@@ -20,5 +20,7 @@ jobs:
           go-version: '1.19'
       - name: Install dependencies
         run: go get .
+      - name: Install gofumpt
+        run: go install mvdan.cc/gofumpt@latest
       - name: Format
         run: gofumpt -l -w .
