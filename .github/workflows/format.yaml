@@ -1,4 +1,4 @@
-name: lint test
+name: go Test check
 
 on:
   pull_request:
@@ -23,9 +23,18 @@ jobs:
       - name: Install dependencies
         run: go get .
       - name: Test with Go
-        run: go test -json > TestResults-${{ matrix.go-version }}.json
-      - name: Upload Go test results
-        uses: actions/upload-artifact@v3
+        run: |
+          go test -v -timeout 30s -coverprofile=cover.out -cover ./...
+          go tool cover -func=cover.out
+      - name: Run Gosec Security Scanner
+        uses: securego/gosec@master
         with:
-          name: Go-results-${{ matrix.go-version }}
-          path: TestResults-${{ matrix.go-version }}.json
+          args: ./...
+      - name: Check critic
+        run: |
+          go install -v github.com/go-critic/go-critic/cmd/gocritic@latest
+          gocritic check -enableAll ./...
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: v1.53
