@@ -16,6 +16,8 @@ import (
 	"github.com/hashicorp/hcl"
 )
 
+var subnetList []map[string]interface{}
+
 func InitializeFolder(folderPath string) error {
 	err := os.RemoveAll(folderPath)
 	if err != nil {
@@ -33,18 +35,18 @@ func MergeEnvTf(userFolderPath string, data []map[string]interface{}) error {
 	tfFilePath := filepath.Join("platform", "terraform")
 
 	// version config
-	versionPath := filepath.Join(tfFilePath, "version")
+	versionPath := filepath.Join(tfFilePath, "version", "versions.tf")
 	versionContent, err := ioutil.ReadFile(versionPath)
 	if err != nil {
 		return err
 	}
-	err = CreateFile(userFolderPath, "versions.tf", versionContent)
+	err = createFile(userFolderPath, "versions.tf", versionContent)
 	if err != nil {
 		return err
 	}
 
 	// sg config
-	sgFilePath := filepath.Join(tfFilePath, "sg")
+	sgFilePath := filepath.Join(tfFilePath, "sg", "main.tf")
 	sgFileContent, err := ioutil.ReadFile(sgFilePath)
 	if err != nil {
 		return err
@@ -52,42 +54,43 @@ func MergeEnvTf(userFolderPath string, data []map[string]interface{}) error {
 
 	for _, item := range data {
 		folderPath := item["type"].(string)
-
-		mainFilePath := filepath.Join(tfFilePath, folderPath, "main.tf")
-		mainContent, err := ioutil.ReadFile(mainFilePath)
-		if err != nil {
-			return err
-		}
-
-		varFilePath := filepath.Join(tfFilePath, folderPath, "variables.tf")
-		varContent, err := ioutil.ReadFile(varFilePath)
-		if err != nil {
-			return err
-		}
-
-		userMainPath := filepath.Join(userFolderPath, "main.tf")
-		if err := AppendFile(userMainPath, mainContent); err != nil {
-			return err
-		}
-
-		re := regexp.MustCompile(`(?ms)module\s+"` + folderPath + `[^"]*"\s*{(?:[^{}]*{[^{}]*})*[^{}]*}`)
-		if matches := re.FindAllString(string(sgFileContent), -1); len(matches) > 0 {
-			sgContent := strings.Join(matches, "\n\n")
-			if err := AppendFile(userMainPath, []byte(sgContent)); err != nil {
+		if folderPath != "privatesubnet" && folderPath != "publicsubnet" {
+			mainFilePath := filepath.Join(tfFilePath, folderPath, "main.tf")
+			mainContent, err := ioutil.ReadFile(mainFilePath)
+			if err != nil {
 				return err
 			}
-		}
 
-		userVarPath := filepath.Join(userFolderPath, "variables.tf")
-		if err := AppendFile(userVarPath, varContent); err != nil {
-			return err
+			varFilePath := filepath.Join(tfFilePath, folderPath, "variables.tf")
+			varContent, err := ioutil.ReadFile(varFilePath)
+			if err != nil {
+				return err
+			}
+
+			userMainPath := filepath.Join(userFolderPath, "main.tf")
+			if err := appendFile(userMainPath, mainContent); err != nil {
+				return err
+			}
+
+			re := regexp.MustCompile(`(?ms)module\s+"` + folderPath + `[^"]*"\s*{(?:[^{}]*{[^{}]*})*[^{}]*}`)
+			if matches := re.FindAllString(string(sgFileContent), -1); len(matches) > 0 {
+				sgContent := strings.Join(matches, "\n\n")
+				if err := appendFile(userMainPath, []byte(sgContent)); err != nil {
+					return err
+				}
+			}
+
+			userVarPath := filepath.Join(userFolderPath, "variables.tf")
+			if err := appendFile(userVarPath, varContent); err != nil {
+				return err
+			}
 		}
 	}
 
 	return nil
 }
 
-func AppendFile(filePath string, content []byte) error {
+func appendFile(filePath string, content []byte) error {
 	exist, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		return ioutil.WriteFile(filePath, content, 0o644)
@@ -132,35 +135,40 @@ func CreateTfvars(userFolderPath string, data []map[string]interface{}) error {
 		itemType := item["type"].(string)
 		itemData := item["data"].(map[string]interface{})
 
-		// prefix가 'itemType_'인 variables 항목을 찾아야 함.
-		for name := range variables {
-			if strings.HasPrefix(name, fmt.Sprintf("%s_", itemType)) {
-				for key, value := range itemData {
-					if name == "vpc_privatesubnet" || name == "vpc_publicsubnet" {
-						subnetCnt := int(itemData["privatesubnet"].(float64) + itemData["publicsubnet"].(float64))
+		// Process subnet
+		if itemType == "privatesubnet" || itemType == "publicsubnet" {
+			subnetList = append(subnetList, item)
+			continue
+		}
 
-						req := models.SubnetRequest{
-							VpcCidr:   itemData["cidr"].(string),
-							SubnetCnt: subnetCnt,
-						}
-
-						res := CalcSubnet(&req)
-
-						if name == "vpc_privatesubnet" {
-							variables[name] = res[:int(itemData["privatesubnet"].(float64))]
-						} else {
-							variables[name] = res[int(itemData["privatesubnet"].(float64)):]
-						}
-						continue
-					}
-					if name == fmt.Sprintf("%s_%s", itemType, key) {
-						variables[name] = value
-					}
-				}
+		// Process variables
+		for key, value := range itemData {
+			if name := fmt.Sprintf("%s_%s", itemType, key); variables[name] != nil {
+				variables[name] = value
 			}
 		}
-		if itemData["user-data.sh"] != nil {
-			err = CreateFile(userFolderPath, "user-data.sh", []byte(itemData["user-data.sh"].(string)))
+
+		// Process vpc subnet cidr
+		if name := fmt.Sprintf("%s_privatesubnet", itemType); variables[name] != nil {
+			subnetCnt := int(itemData["privatesubnet"].(float64) + itemData["publicsubnet"].(float64))
+			req := models.SubnetRequest{
+				VpcCidr:   itemData["cidr"].(string),
+				SubnetCnt: subnetCnt,
+			}
+			res := calcSubnet(&req)
+
+			variables[name] = res[:int(itemData["privatesubnet"].(float64))]
+			variables["vpc_publicsubnet"] = res[int(itemData["privatesubnet"].(float64)):]
+		}
+
+		if name := fmt.Sprintf("%s_%s", itemType, "subnet"); variables[name] != nil {
+			kind, start, end := subnetDepend(item["id"].(string))
+			variables[name] = variables[fmt.Sprintf("vpc_%s", kind)].([]string)[start:end]
+		}
+
+		// Process user-data
+		if itemData["user-data"] != nil {
+			err = createFile(userFolderPath, "user-data.sh", []byte(itemData["user-data"].(string)))
 			if err != nil {
 				return err
 			}
@@ -200,7 +208,7 @@ func CreateTfvars(userFolderPath string, data []map[string]interface{}) error {
 	return nil
 }
 
-func CalcSubnet(req *models.SubnetRequest) []string {
+func calcSubnet(req *models.SubnetRequest) []string {
 	vpcCidr := req.VpcCidr
 	subnetCnt := req.SubnetCnt
 
@@ -234,6 +242,21 @@ func CalcSubnet(req *models.SubnetRequest) []string {
 	return subnetCidrs
 }
 
+func subnetDepend(parentId string) (string, int, int) {
+	tp, start, end := "", -1, -1
+	for idx, sub := range append(subnetList) {
+		if sub["parent"] == parentId {
+			if start == -1 {
+				tp = sub["type"].(string)
+				start, end = idx, idx+1
+			} else {
+				end += 1
+			}
+		}
+	}
+	return tp, start, end
+}
+
 func ApplyTerraform(userFolderPath string) error {
 	err := os.Chdir(userFolderPath)
 	if err != nil {
@@ -259,7 +282,7 @@ func ApplyTerraform(userFolderPath string) error {
 	return nil
 }
 
-func CreateFile(userFolderPath string, fileName string, content []byte) error {
+func createFile(userFolderPath string, fileName string, content []byte) error {
 	filePath := filepath.Join(userFolderPath, fileName)
 
 	err := ioutil.WriteFile(filePath, content, 0o644)
