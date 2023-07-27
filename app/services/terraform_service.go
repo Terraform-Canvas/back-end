@@ -31,6 +31,19 @@ func InitializeFolder(folderPath string) error {
 
 func MergeEnvTf(userFolderPath string, data []map[string]interface{}) error {
 	tfFilePath := filepath.Join("platform", "terraform")
+
+	// version config
+	versionPath := filepath.Join(tfFilePath, "version")
+	versionContent, err := ioutil.ReadFile(versionPath)
+	if err != nil {
+		return err
+	}
+	err = CreateFile(userFolderPath, "versions.tf", versionContent)
+	if err != nil {
+		return err
+	}
+
+	// sg config
 	sgFilePath := filepath.Join(tfFilePath, "sg")
 	sgFileContent, err := ioutil.ReadFile(sgFilePath)
 	if err != nil {
@@ -58,14 +71,13 @@ func MergeEnvTf(userFolderPath string, data []map[string]interface{}) error {
 		}
 
 		re := regexp.MustCompile(`(?ms)module\s+"` + folderPath + `[^"]*"\s*{(?:[^{}]*{[^{}]*})*[^{}]*}`)
-		matches := re.FindAllString(string(sgFileContent), -1)
-
-		if len(matches) > 0 {
+		if matches := re.FindAllString(string(sgFileContent), -1); len(matches) > 0 {
 			sgContent := strings.Join(matches, "\n\n")
 			if err := AppendFile(userMainPath, []byte(sgContent)); err != nil {
 				return err
 			}
 		}
+
 		userVarPath := filepath.Join(userFolderPath, "variables.tf")
 		if err := AppendFile(userVarPath, varContent); err != nil {
 			return err
@@ -145,6 +157,12 @@ func CreateTfvars(userFolderPath string, data []map[string]interface{}) error {
 						variables[name] = value
 					}
 				}
+			}
+		}
+		if itemData["user-data.sh"] != nil {
+			err = CreateFile(userFolderPath, "user-data.sh", []byte(itemData["user-data.sh"].(string)))
+			if err != nil {
+				return err
 			}
 		}
 	}
@@ -236,6 +254,17 @@ func ApplyTerraform(userFolderPath string) error {
 		if err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+func CreateFile(userFolderPath string, fileName string, content []byte) error {
+	filePath := filepath.Join(userFolderPath, fileName)
+
+	err := ioutil.WriteFile(filePath, content, 0o644)
+	if err != nil {
+		return err
 	}
 
 	return nil
