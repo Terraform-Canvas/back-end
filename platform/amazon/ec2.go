@@ -8,13 +8,13 @@ import (
 )
 
 type EC2DataTypes struct {
-	instanceTypes []types.InstanceTypeInfo
+	instanceTypes []types.InstanceTypeOffering
 }
 type EC2Images struct {
 	ami []types.Image
 }
 
-func GetEC2InstanceTypes() []types.InstanceTypeInfo {
+func GetEC2InstanceTypes() []types.InstanceTypeOffering {
 	client := configs.GetEC2Client()
 	ec2InstanceTypes := &EC2DataTypes{}
 	pagingInstanceTypes(client, nil, ec2InstanceTypes)
@@ -22,7 +22,7 @@ func GetEC2InstanceTypes() []types.InstanceTypeInfo {
 }
 
 func pagingInstanceTypes(client *ec2.Client, nextToken *string, ec2InstanceTypes *EC2DataTypes) {
-	resp, err := client.DescribeInstanceTypes(context.TODO(), &ec2.DescribeInstanceTypesInput{
+	resp, err := client.DescribeInstanceTypeOfferings(context.TODO(), &ec2.DescribeInstanceTypeOfferingsInput{
 		NextToken: nextToken,
 	})
 	if err != nil {
@@ -31,7 +31,7 @@ func pagingInstanceTypes(client *ec2.Client, nextToken *string, ec2InstanceTypes
 	if resp.NextToken != nil {
 		pagingInstanceTypes(client, resp.NextToken, ec2InstanceTypes)
 	}
-	ec2InstanceTypes.instanceTypes = append(ec2InstanceTypes.instanceTypes, resp.InstanceTypes...)
+	ec2InstanceTypes.instanceTypes = append(ec2InstanceTypes.instanceTypes, resp.InstanceTypeOfferings...)
 }
 
 func GetEC2AMI() []types.Image {
