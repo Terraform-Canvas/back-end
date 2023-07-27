@@ -21,3 +21,7 @@ variable "asg_image_id" {
 variable "asg_image_id" {
   type = string
 }
+
+variable "asg_subnet" {
+  type = list(any)
+}

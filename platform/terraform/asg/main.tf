@@ -6,7 +6,7 @@ module "asg" {
   min_size            = var.asg_min_size
   max_size            = var.asg_max_size
   desired_capacity    = var.asg_desired_capacity
-  vpc_zone_identifier = module.vpc.private_subnets
+  vpc_zone_identifier = var.asg_private
 
   launch_template_name = "learn-terraform-aws-asg-"
   use_name_prefix      = true
