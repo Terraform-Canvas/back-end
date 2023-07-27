@@ -37,7 +37,13 @@ func MergeEnvTf(c *fiber.Ctx) error {
 		})
 	}
 
-	email := c.Params("email")
+	email, err := utils.GetEmailFromToken(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": true,
+			"msg":   err,
+		})
+	}
 	userFolderPath := filepath.Join("usertf", email)
 
 	err = services.InitializeFolder(userFolderPath)
@@ -96,7 +102,13 @@ func DestroyEnv(c *fiber.Ctx) error {
 		})
 	}
 
-	email := c.Params("email")
+	email, err := utils.GetEmailFromToken(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": true,
+			"msg":   err,
+		})
+	}
 	userFolderPath := filepath.Join("usertf", email)
 
 	err = services.DestroyTerraform(userFolderPath)
