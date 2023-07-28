@@ -55,6 +55,7 @@ func MergeEnvTf(userFolderPath string, data []map[string]interface{}) error {
 
 	for _, item := range data {
 		folderPath := item["type"].(string)
+
 		if folderPath != "privatesubnet" && folderPath != "publicsubnet" {
 			mainFilePath := filepath.Join(tfFilePath, folderPath, "main.tf")
 			mainContent, err := ioutil.ReadFile(mainFilePath)
@@ -85,6 +86,8 @@ func MergeEnvTf(userFolderPath string, data []map[string]interface{}) error {
 			if err := appendFile(userVarPath, varContent); err != nil {
 				return err
 			}
+		} else {
+			subnetList = append(subnetList, item)
 		}
 	}
 
@@ -136,12 +139,6 @@ func CreateTfvars(userFolderPath string, data []map[string]interface{}) error {
 		itemType := item["type"].(string)
 		itemData := item["data"].(map[string]interface{})
 
-		// Process subnet
-		if itemType == "privatesubnet" || itemType == "publicsubnet" {
-			subnetList = append(subnetList, item)
-			continue
-		}
-
 		// Process variables
 		for key, value := range itemData {
 			if name := fmt.Sprintf("%s_%s", itemType, key); variables[name] != nil {
@@ -163,8 +160,13 @@ func CreateTfvars(userFolderPath string, data []map[string]interface{}) error {
 		}
 
 		if name := fmt.Sprintf("%s_%s", itemType, "subnet"); variables[name] != nil {
-			kind, start, end := subnetDepend(item["id"].(string))
-			variables[name] = variables[fmt.Sprintf("vpc_%s", kind)].([]string)[start:end]
+			kind, start, end := subnetDepend(item)
+			vpcSubnet := variables[fmt.Sprintf("vpc_%s", kind)].([]string)
+			if vpcSubnetLen := len(vpcSubnet); end > vpcSubnetLen {
+				start %= vpcSubnetLen
+				end %= vpcSubnetLen
+			}
+			variables[name] = vpcSubnet[start:end]
 		}
 
 		// Process user-data
@@ -243,10 +245,17 @@ func calcSubnet(req *models.SubnetRequest) []string {
 	return subnetCidrs
 }
 
-func subnetDepend(parentId string) (string, int, int) {
+func subnetDepend(item map[string]interface{}) (string, int, int) {
 	tp, start, end := "", -1, -1
 	for idx, sub := range subnetList {
-		if sub["parent"] == parentId {
+		if sub["parent"] == item["id"].(string) {
+			if start == -1 {
+				tp = sub["type"].(string)
+				start, end = idx, idx+1
+			} else {
+				end += 1
+			}
+		} else if sub["id"] == item["parent"].(string) {
 			if start == -1 {
 				tp = sub["type"].(string)
 				start, end = idx, idx+1
