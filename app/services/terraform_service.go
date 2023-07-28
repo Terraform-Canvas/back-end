@@ -19,6 +19,7 @@ import (
 var subnetList []map[string]interface{}
 
 func InitializeFolder(folderPath string) error {
+	subnetList = subnetList[:0]
 	err := os.RemoveAll(folderPath)
 	if err != nil {
 		return err
@@ -167,8 +168,8 @@ func CreateTfvars(userFolderPath string, data []map[string]interface{}) error {
 		}
 
 		// Process user-data
-		if itemData["user-data"] != nil {
-			err = createFile(userFolderPath, "user-data.sh", []byte(itemData["user-data"].(string)))
+		if itemData["user_data"] != nil {
+			err = createFile(userFolderPath, "user-data.sh", []byte(itemData["user_data"].(string)))
 			if err != nil {
 				return err
 			}
@@ -244,7 +245,7 @@ func calcSubnet(req *models.SubnetRequest) []string {
 
 func subnetDepend(parentId string) (string, int, int) {
 	tp, start, end := "", -1, -1
-	for idx, sub := range append(subnetList) {
+	for idx, sub := range subnetList {
 		if sub["parent"] == parentId {
 			if start == -1 {
 				tp = sub["type"].(string)
