@@ -8,7 +8,7 @@ module "alb" {
   load_balancer_type = "application"
 
   vpc_id          = module.vpc.vpc_id
-  subnets         = module.vpc.public_subnets
+  subnets         = var.alb_subnet
   security_groups = [module.alb_sg.security_group_id]
   internal        = false
 
