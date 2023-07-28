@@ -142,7 +142,11 @@ func CreateTfvars(userFolderPath string, data []map[string]interface{}) error {
 		// Process variables
 		for key, value := range itemData {
 			if name := fmt.Sprintf("%s_%s", itemType, key); variables[name] != nil {
-				variables[name] = value
+				if i, ok := value.([]interface{}); ok {
+					variables[name] = toStringSlice(i)
+				} else {
+					variables[name] = value
+				}
 			}
 		}
 
@@ -209,6 +213,16 @@ func CreateTfvars(userFolderPath string, data []map[string]interface{}) error {
 	}
 
 	return nil
+}
+
+func toStringSlice(slice []interface{}) []string {
+	result := make([]string, 0)
+	for _, item := range slice {
+		if str, ok := item.(string); ok {
+			result = append(result, str)
+		}
+	}
+	return result
 }
 
 func calcSubnet(req *models.SubnetRequest) []string {
