@@ -12,7 +12,7 @@ import (
 )
 
 // Create a user env tf
-// @Router /v1/terraform/merge/{email} [post]
+// @Router /v1/terraform/usertf [post]
 func MergeEnvTf(c *fiber.Ctx) error {
 	now := time.Now().Unix()
 	claims, err := utils.ExtractTokenMetadata(c)
@@ -37,7 +37,13 @@ func MergeEnvTf(c *fiber.Ctx) error {
 		})
 	}
 
-	email := c.Params("email")
+	email, err := utils.GetEmailFromToken(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": true,
+			"msg":   err,
+		})
+	}
 	userFolderPath := filepath.Join("usertf", email)
 
 	err = services.InitializeFolder(userFolderPath)
@@ -64,15 +70,22 @@ func MergeEnvTf(c *fiber.Ctx) error {
 		})
 	}
 
+	err = services.ApplyTerraform(userFolderPath)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": true,
+			"msg":   err,
+		})
+	}
+
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"error": false,
-		"msg":   "merge user env tf success",
+		"msg":   "Successful creation of the user's tf files environment",
 	})
 }
 
-// Apply user env's tf
-// @Router /v1/terraform/apply/{email} [post]
-func ApplyEnvTf(c *fiber.Ctx) error {
+// @Router /v1/terraform/destroy [post]
+func DestroyEnv(c *fiber.Ctx) error {
 	now := time.Now().Unix()
 	claims, err := utils.ExtractTokenMetadata(c)
 	if err != nil {
@@ -88,8 +101,17 @@ func ApplyEnvTf(c *fiber.Ctx) error {
 			"msg":   "unauthorized, check expiration time of your token",
 		})
 	}
-	email := c.Params("email")
-	result, err := services.ApplyTerraform(email)
+
+	email, err := utils.GetEmailFromToken(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": true,
+			"msg":   err,
+		})
+	}
+	userFolderPath := filepath.Join("usertf", email)
+
+	err = services.DestroyTerraform(userFolderPath)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": true,
@@ -99,6 +121,6 @@ func ApplyEnvTf(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"error": false,
-		"msg":   result,
+		"msg":   "successful env destruction",
 	})
 }

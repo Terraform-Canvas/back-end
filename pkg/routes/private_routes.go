@@ -15,7 +15,7 @@ func PrivateRoutes(a *fiber.App) {
 	route.Post("/login/refresh", middleware.JWTProtected(), controllers.UserRefresh)
 	route.Post("/logout", middleware.JWTProtected(), controllers.UserSignOut)
 	route.Post("/terraform/usertf", middleware.JWTProtected(), controllers.MergeEnvTf)
-	route.Post("/terraform/apply", middleware.JWTProtected(), controllers.ApplyEnvTf)
+	route.Post("/terraform/destroy", middleware.JWTProtected(), controllers.DestroyEnv)
 	route.Post("/s3/upload", middleware.JWTProtected(), controllers.UploadHandler)
 	route.Get("/s3/download", middleware.JWTProtected(), controllers.DownloadHandler)
 	route.Post("/user/key", middleware.JWTProtected(), controllers.UserKeySave)
