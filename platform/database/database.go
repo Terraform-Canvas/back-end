@@ -6,6 +6,9 @@ import (
 	"os"
 	"time"
 
+	"main/app/models"
+	"main/app/queries"
+
 	"github.com/oracle/nosql-go-sdk/nosqldb/common"
 
 	"github.com/oracle/nosql-go-sdk/nosqldb"
@@ -15,12 +18,19 @@ import (
 	"github.com/oracle/nosql-go-sdk/nosqldb/types"
 )
 
-func OCINoSQLConnection() {
+type Queries struct {
+	*queries.UserQueries
+}
+
+func OCINoSQLConnection() (*Queries, error) {
 	client, err := createClient()
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	defer client.Close()
+	return &Queries{
+		UserQueries: &queries.UserQueries{client},
+	}, nil
 }
 
 func createClient() (*nosqldb.Client, error) {
@@ -31,7 +41,8 @@ func createClient() (*nosqldb.Client, error) {
 		os.Getenv("fingerprint"), os.Getenv("compartmentID"), os.Getenv("privateKeyFile"), &privateKeyPass)
 	if err != nil {
 		log.Println(err)
-		panic(err)
+		log.Println(os.Getenv("privateKeyFile"))
+		return nil, err
 	}
 	cfg := nosqldb.Config{
 		Mode:                  "cloud",
@@ -44,11 +55,30 @@ func createClient() (*nosqldb.Client, error) {
 	client, err := nosqldb.NewClient(cfg)
 	if err != nil {
 		log.Println(err)
-		panic(err)
+		return nil, err
 	}
 	return client, nil
 }
 
+func (q *Queries) UpdateUser(user models.User) error {
+	mapValues := types.ToMapValue("email", user.Email)
+	mapValues.Put("password", user.Password)
+	mapValues.Put("name", user.Name)
+	mapValues.Put("refreshToken", user.RefreshToken)
+
+	putReq := &nosqldb.PutRequest{
+		TableName: "userTable",
+		Value:     mapValues,
+	}
+
+	_, err := q.Put(putReq)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// sample oci method
 func putData(client *nosqldb.Client, tableName string) {
 	mapValues := types.ToMapValue("id", 1)
 	mapValues.Put("user_id", "test")
@@ -102,10 +132,9 @@ func getData(client *nosqldb.Client, tableName string) {
 
 func createTable(client *nosqldb.Client, tableName string) {
 	stmt := fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s ("+
-		"id LONG, "+
-		"user_id STRING, "+
+		"email STRING, "+
 		"password STRING, "+
-		"PRIMARY KEY(id))", tableName)
+		"PRIMARY KEY(email))", tableName)
 	tableReq := &nosqldb.TableRequest{
 		TableLimits: &nosqldb.TableLimits{
 			ReadUnits:  50,

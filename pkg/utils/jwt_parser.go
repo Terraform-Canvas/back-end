@@ -1,19 +1,18 @@
 package utils
 
 import (
+	"errors"
 	"os"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/google/uuid"
 )
 
 // TokenMetadata struct to describe metadata in JWT.
 type TokenMetadata struct {
-	UserID      uuid.UUID
-	Credentials map[string]bool
-	Expires     int64
+	Email   string
+	Expires int64
 }
 
 // ExtractTokenMetadata func to extract metadata from JWT.
@@ -26,26 +25,17 @@ func ExtractTokenMetadata(c *fiber.Ctx) (*TokenMetadata, error) {
 	// Setting and checking token and credentials.
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if ok && token.Valid {
-		// User ID.
-		userID, err := uuid.Parse(claims["id"].(string))
-		if err != nil {
+		email, ok := claims["email"].(string)
+		if !ok {
 			return nil, err
 		}
 
 		// Expires time.
 		expires := int64(claims["expires"].(float64))
 
-		// User credentials.
-		credentials := map[string]bool{
-			"book:create": claims["book:create"].(bool),
-			"book:update": claims["book:update"].(bool),
-			"book:delete": claims["book:delete"].(bool),
-		}
-
 		return &TokenMetadata{
-			UserID:      userID,
-			Credentials: credentials,
-			Expires:     expires,
+			Email:   email,
+			Expires: expires,
 		}, nil
 	}
 
@@ -77,4 +67,14 @@ func verifyToken(c *fiber.Ctx) (*jwt.Token, error) {
 
 func jwtKeyFunc(token *jwt.Token) (interface{}, error) {
 	return []byte(os.Getenv("JWT_SECRET_KEY")), nil
+}
+
+func GetEmailFromToken(c *fiber.Ctx) (string, error) {
+	tokenMetadata, err := ExtractTokenMetadata(c)
+	if err != nil {
+		return "", errors.New("Failed to extract token metadata. Please try again.")
+	}
+
+	email := tokenMetadata.Email
+	return email, nil
 }

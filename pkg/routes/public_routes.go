@@ -9,7 +9,6 @@ import (
 func PublicRoutes(a *fiber.App) {
 	// Create routes group.
 	route := a.Group("/api/v1")
-
 	// Routes for POST method:
-	route.Post("/sample", controllers.Sample) // get list of all books
+	route.Post("/login/new", controllers.UserSignIn)
 }
