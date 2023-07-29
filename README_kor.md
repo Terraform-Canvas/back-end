@@ -14,7 +14,7 @@
 <h3 align="center">Terraform-Canvas</h3>
 
   <p align="center">
-    Terraform Cloud Infrastructure Provisioning Web Services Project with Visual Programming
+    Visual Programming을 통한 Terraform 클라우드 인프라 프로비저닝 웹 서비스 프로젝트
     <br />
     <a href="https://facerain.notion.site/e393c21c423e46318f1dd21a3a9ed428?v=cf7ba34920154548a7d0303f27c7710b&pvs=4"><strong>Explore the docs »</strong></a>
     <br />
@@ -61,7 +61,7 @@
 
 <!-- ABOUT THE PROJECT -->
 ## :mag: About The Project
-Many companies are choosing Terraform as an IaC tool for transitioning from existing cloud and on-premise environments to cloud native environments. However, they are suffering a lot due to Terraform's high entry barriers. Therefore, we want to lower the barriers to Terraform's entry through "Terraform Cloud Infrastructure Provisioning Web Service with Visual Programming." This enables start-up and SI teams that want to introduce a new cloud-native environment and TF teams that want to test and prototype the IaC environment quickly.
+많은 기업들이 기존 클라우드 및 온프레미스 환경에서 클라우드 네이티브 환경으로의 전환을 위한 IaC 툴로 Terraform을 선택하고 있다. 하지만 Terraform의 높은 진입 장벽 때문에 많은 어려움을 겪고 있다. 그래서 우리는 “Visual Programming을 통한 Terraform 클라우드 인프라 프로비저닝 웹 서비스”를 통해 Terraform의 기술 진입 장벽을 낮추고자 한다. 이를 통해 새롭게 클라우드 네이티브 환경을 도입하고자 하는 스타트업과 SI 팀 그리고 빠르게 IaC 환경을 테스트 및 프로토타이핑하고자 하는 TF 팀에서 활용할 수 있도록 한다.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -83,14 +83,14 @@ Many companies are choosing Terraform as an IaC tool for transitioning from exis
 ## :rocket: Getting Started
 
 ### :zap: Prerequisites
-Download and install packages and associated dependencies via `go get`
+go get을 통해서 패키지 및 관련 종속성 다운로드 및 설치
 * go
   ```sh
   go get .
   ```
 
 ### :pencil2: Configuration
-Setting environment variables through `.env`
+.env를 통한 환경변수 설정
 ```env
 # .env
 
@@ -130,34 +130,34 @@ AWS_REGION=USER_REGION
 
 
 ## :globe_with_meridians: Architecture
-### :triangular_flag_on_post: Overall Service Configuration Architecture
-![service](./images/service-architecture.png)
+### :triangular_flag_on_post: 전체 서비스 구성도
+![service](./images/service.png)
 
-### :triangular_flag_on_post: Development Environment Architecture
+### :triangular_flag_on_post:개발 환경 구성도
 ![env](./images/env-architecture.png)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## :memo: REST API
-[Login new](https://www.notion.so/facerain/new-c4285cb8039844eeb4f6ac6fc3db31e0?pvs=4)
+[로그인 new](https://www.notion.so/new-c4285cb8039844eeb4f6ac6fc3db31e0?pvs=21)
 
-[Login refresh](https://www.notion.so/facerain/refresh-5549d45f449c4388b907c4fc03251943?pvs=4)
+[로그인 refresh](https://www.notion.so/refresh-5549d45f449c4388b907c4fc03251943?pvs=21)
 
-[Logout](https://www.notion.so/facerain/d72706b87d9f414aa40f57a3bd744bd8?pvs=4)
+[로그아웃](https://www.notion.so/d72706b87d9f414aa40f57a3bd744bd8?pvs=21)
 
-[Create tf](https://www.notion.so/facerain/tf-60291b66fe524c419f30dc3c13733682?pvs=4)
+[테라폼 유저 tf파일 생성](https://www.notion.so/tf-60291b66fe524c419f30dc3c13733682?pvs=21)
 
-[Apply tf](https://www.notion.so/facerain/fcff4f41d3ee4b5bb9bcc5fafe180229?pvs=4)
+[테라폼 실행](https://www.notion.so/fcff4f41d3ee4b5bb9bcc5fafe180229?pvs=21)
 
-[Save IAM user key](https://www.notion.so/facerain/api-key-e9dc48f44d054aa8929aa976ce7313b8?pvs=4)
+[유저 api key 저장](https://www.notion.so/api-key-e9dc48f44d054aa8929aa976ce7313b8?pvs=21)
 
-[Upload to S3](https://www.notion.so/facerain/S3-27cdcd0c7fdf47a68850e7500db487f6?pvs=4)
+[S3 폴더 업로드](https://www.notion.so/S3-27cdcd0c7fdf47a68850e7500db487f6?pvs=21)
 
-[Download to S3](https://www.notion.so/facerain/S3-a45f2ff0d33d465e950cb1b8c159df41?pvs=4)
+[S3 폴더 다운로드](https://www.notion.so/S3-a45f2ff0d33d465e950cb1b8c159df41?pvs=21)
 
-[Get InstanceTypes](https://www.notion.so/facerain/6f67510b97a34092811c281c737729b1?pvs=4)
+[인스턴스 타입 불러오기](https://www.notion.so/6f67510b97a34092811c281c737729b1?pvs=21)
 
-[Get AMI](https://www.notion.so/facerain/AMI-9aba2eb13f6842c3b9c91d4240b1f6e2?pvs=4)
+[AMI 불러오기](https://www.notion.so/AMI-9aba2eb13f6842c3b9c91d4240b1f6e2?pvs=21)
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -166,16 +166,16 @@ AWS_REGION=USER_REGION
 
 <!-- CONTRIBUTING -->
 ## :fire: Contributing
-Please refer to `CONTRIBUTION.txt` for Contribution.
+Contribution을 위해서는 `CONTRIBUTION.txt`를 참고해주세요.
 
-For issues, new functions and requests to modify please follow the following procedure. 🥰
+이슈나 새로운 기능 및 수정에 대한 요청은 다음과 같은 절차를 따라주세요. 🥰
 
-1. Fork the Project
-2. Create a Issue when you have new feature or bug, just not Typo fix
-3. Create your Feature Branch from dev Branch (`git checkout -b feature/Newfeature`)
-4. Commit your Changes (`git commit -m 'feat: add new feature'`)
-5. Push to the Branch (`git push origin feature/Newfeature`)
-6. Open a Pull Request to dev branch with Issues
+1. 프로젝트 fork
+2. 새로운 수정이나, 버그, 기능에 대해 이슈 생성 (오타 수정의 경우 따로 x)
+3. dev branch에서 새로운 branch 생성 (`git checkout -b feature/Newfeature`)
+4. 변경 사항 commit (`git commit -m 'feat: add new feature'`)
+5. 작업한 branch의 내용을 push (`git push origin feature/Newfeature`)
+6. dev branch로의 병합으로 Pull Request를 열고 해당 Issues에 대한 closes keyword 추가
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -183,7 +183,8 @@ For issues, new functions and requests to modify please follow the following pro
 
 <!-- LICENSE -->
 ## :closed_lock_with_key: License
-Please refer to `LICENSE.txt` for LICENSE.
+
+라이센스 정보는 `LICENSE.txt`를 참고해주세요.
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
@@ -194,8 +195,8 @@ Please refer to `LICENSE.txt` for LICENSE.
 <table>
   <tbody>
     <tr>
-      <td align="center"><a href="https://github.com/Eeap"><img src="https://avatars.githubusercontent.com/u/42088290?v=4" width="100px;" alt=""/><br /><sub><b>Sumin Kim</b></sub></a></td>
-      <td align="center"><a href="https://github.com/dusdjhyeon"><img src="https://avatars.githubusercontent.com/u/73868703?v=4" width="100px;" alt=""/><br /><sub><b>Dahyun Kang</b></sub></a></td>
+      <td align="center"><a href="https://github.com/Eeap"><img src="https://avatars.githubusercontent.com/u/42088290?v=4" width="100px;" alt=""/><br /><sub><b>김수민</b></sub></a></td>
+      <td align="center"><a href="https://github.com/dusdjhyeon"><img src="https://avatars.githubusercontent.com/u/73868703?v=4" width="100px;" alt=""/><br /><sub><b>강다현</b></sub></a></td>
     </tr>
   </tobdy>
 </table>
