@@ -8,7 +8,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/Terraform-Canvas/back-end">
-    <img src="canvas-logo.jpg" alt="Logo" width="200" height="200">
+    <img src="./images/canvas-logo.jpg" alt="Logo" width="200" height="200">
   </a>
 
 <h3 align="center">Terraform-Canvas</h3>
