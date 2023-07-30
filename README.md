@@ -19,9 +19,9 @@
     <a href="https://facerain.notion.site/e393c21c423e46318f1dd21a3a9ed428?v=cf7ba34920154548a7d0303f27c7710b&pvs=4"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="https://github.com/Terraform-Canvas/back-end/README_kor.md">한국어</a>
+    <a href="https://github.com/Terraform-Canvas/back-end/blob/main/README_kor.md">한국어</a>
     ·
-    <a href="https://github.com/Terraform-Canvas/back-end/README.md">English</a>
+    <a href="https://github.com/Terraform-Canvas/back-end/blob/main/README.md">English</a>
     <br />
     <br />
     <a href="https://github.com/Terraform-Canvas/back-end/issues">Report Issues</a>
