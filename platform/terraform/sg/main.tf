@@ -1,22 +1,37 @@
-module "asg_ssg" {
-  source = "terraform-aws-modules/security-group/aws"
-  name   = "asg_soucesg_sg"
+resource "aws_security_group" "asg_ssg" {
+  name   = "asg-sg"
   vpc_id = module.vpc.vpc_id
 
-  computed_ingress_with_source_security_group_id = [
-    {
-      rule                     = "http-80-tcp"
-      source_security_group_id = module.alb_sg.security_group_id
-    }
-  ]
-  number_of_computed_ingress_with_source_security_group_id = 1
+  ingress {
+    from_port       = 80
+    to_port         = 80
+    protocol        = "tcp"
+    security_groups = [aws_security_group.alb_sg.id]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }
 
-module "alb_sg" {
-  source = "terraform-aws-modules/security-group/aws//modules/http-80"
-
-  name   = "alb_cidr_sg"
+resource "aws_security_group" "alb_sg" {
+  name   = "alb-cidr-sg"
   vpc_id = module.vpc.vpc_id
 
-  ingress_cidr_blocks = ["0.0.0.0/0"]
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }
