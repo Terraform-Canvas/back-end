@@ -8,6 +8,11 @@ variable "asg_max_size" {
   default = 3
 }
 
+variable "asg_desired_capacity" {
+  type    = number
+  default = 2
+}
+
 variable "asg_instance_type" {
   type    = string
   default = "t2.micro"
@@ -25,9 +30,4 @@ variable "asg_subnet_count" {
 variable "asg_subnet_type" {
   type    = string
   default = "privatesubnet"
-}
-
-variable "asg_desired_capacity" {
-  type    = number
-  default = 2
 }
