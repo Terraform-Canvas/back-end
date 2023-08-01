@@ -1,6 +1,6 @@
 FROM golang:1.19-alpine AS builder
 
-LABEL maintainer="Vic Shóstak <vic@shostak.dev> (https://shostak.dev/)"
+LABEL maintainer="Terraform canvas <sumink0903@gmail.com>"
 
 # Move to working directory (/build).
 WORKDIR /build
@@ -19,7 +19,7 @@ RUN go build -ldflags="-s -w" -o apiserver .
 FROM scratch
 
 # Copy binary and config files from /build to root folder of scratch container.
-COPY --from=builder ["/build/apiserver", "/build/.env", "/"]
+COPY --from=builder ["/build/apiserver", "/"]
 
 # Command to run when starting the container.
 ENTRYPOINT ["/apiserver"]
