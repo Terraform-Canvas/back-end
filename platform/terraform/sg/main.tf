@@ -3,7 +3,7 @@ module "asg_sg" {
   version = "~> 5.0"
 
   name        = "asg-sg"
-  description = "A security group"
+  description = "A Auto Scaling Group security group"
   vpc_id      = module.vpc.vpc_id
 
   computed_ingress_with_source_security_group_id = [
@@ -22,7 +22,7 @@ module "alb_sg" {
   version = "~> 5.0"
 
   name        = "alb-sg"
-  description = "A security group"
+  description = "A ALB security group"
   vpc_id      = module.vpc.vpc_id
 
   ingress_rules       = ["http-80-tcp"]
