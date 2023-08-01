@@ -45,69 +45,144 @@ jobs:
           docker build -t "terraform_canvas:new-backend" .
           docker tag "terraform_canvas:new-backend" "${{ steps.get-ocir-repository.outputs.repo_path }}:$IMAGE_TAG"
           docker push "${{ steps.get-ocir-repository.outputs.repo_path }}:$IMAGE_TAG"
-      - name: update values.yaml
+      - name: update back.yaml
         run: |
-          cat <<EOF> values.yaml
+          cat <<EOF> back.yaml
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: {{ include "terraform-canvas.fullname" . }}-back
+            labels:
+              app: {{ include "terraform-canvas.name" . }}-back
+          spec:
+            replicas: {{ .Values.replicaCount }}
+            selector:
+              matchLabels:
+                app: {{ include "terraform-canvas.name" . }}-back
+            template:
+              metadata:
+                labels:
+                  app: {{ include "terraform-canvas.name" . }}-back
+              spec:
+                serviceAccountName: {{ include "terraform-canvas.serviceAccountName" . }}
+                containers:
+                  - name: {{ .Chart.Name }}-back
+                    image: ${{ steps.get-ocir-repository.outputs.repo_path }}:$IMAGE_TAG
+                    ports:
+                      - name: http
+                        containerPort: {{ .Values.backend.lb.http.targetPort}}
+                        protocol: TCP
+                    env:
+                      - name: tenancyID
+                        valueFrom:
+                          secretKeyRef:
+                            name: oci-sdk
+                            key: tenancyID
+                      - name: userID
+                        valueFrom:
+                          secretKeyRef:
+                            name: oci-sdk
+                            key: userID
+                      - name: fingerprint
+                        valueFrom:
+                          secretKeyRef:
+                            name: oci-sdk
+                            key: fingerprint
+                      - name: privateKey
+                        valueFrom:
+                          secretKeyRef:
+                            name: oci-sdk
+                            key: privateKey
+                      - name: compartmentID
+                        valueFrom:
+                          secretKeyRef:
+                            name: oci-sdk
+                            key: compartmentID
+                      - name: privateKeyPass
+                        valueFrom:
+                          secretKeyRef:
+                            name: oci-sdk
+                            key: privateKeyPass
+                      - name: JWT_SECRET_KEY
+                        valueFrom:
+                          secretKeyRef:
+                            name: jwt-config
+                            key: JWT_SECRET_KEY
+                      - name: JWT_SECRET_KEY_EXPIRE_MINUTES_COUNT
+                        valueFrom:
+                          secretKeyRef:
+                            name: jwt-config
+                            key: JWT_SECRET_KEY_EXPIRE_MINUTES_COUNT
+                      - name: JWT_REFRESH_KEY
+                        valueFrom:
+                          secretKeyRef:
+                            name: jwt-config
+                            key: JWT_REFRESH_KEY
+                      - name: JWT_REFRESH_KEY_EXPIRE_HOURS_COUNT
+                        valueFrom:
+                          secretKeyRef:
+                            name: jwt-config
+                            key: JWT_REFRESH_KEY_EXPIRE_HOURS_COUNT
+                      - name: AWS_ACCESS_KEY
+                        valueFrom:
+                          secretKeyRef:
+                            name: aws-sdk
+                            key: AWS_ACCESS_KEY
+                      - name: AWS_SECRET_KEY
+                        valueFrom:
+                          secretKeyRef:
+                            name: aws-sdk
+                            key: AWS_SECRET_KEY
+                      - name: region
+                        valueFrom:
+                          configMapKeyRef:
+                            name: oci-sdk
+                            key: region
+                      - name: AWS_REGION
+                        valueFrom:
+                          configMapKeyRef:
+                            name: aws-sdk
+                            key: AWS_REGION
+                      - name: SERVER_HOST
+                        valueFrom:
+                          configMapKeyRef:
+                            name: server-set
+                            key: SERVER_HOST
+                      - name: SERVER_PORT
+                        valueFrom:
+                          configMapKeyRef:
+                            name: server-set
+                            key: SERVER_PORT
+                      - name: SERVER_READ_TIMEOUT
+                        valueFrom:
+                          configMapKeyRef:
+                            name: server-set
+                            key: SERVER_READ_TIMEOUT
+
           ---
-          # Default values for hello-world.
-          # This is a YAML-formatted file.
-          # Declare variables to be passed into your templates.
-
-          replicaCount: 2
-
-          image:
-            repository:
-              frontend: iad.ocir.io/idklmfs5zwub/terraform_canvas:d3f59a7032f741bb8845d0c7e14d11ebe3959a92
-              backend:  ${{ steps.get-ocir-repository.outputs.repo_path }}:$IMAGE_TAG
-            pullPolicy: IfNotPresent
-            # Overrides the image tag whose default is the chart appVersion.
-            tag: latest
-
-          nameOverride: ""
-          fullnameOverride: ""
-
-          serviceAccount:
-            # Specifies whether a service account should be created
-            create: true
-            # Annotations to add to the service account
-            annotations: {
-            }
-            # The name of the service account to use.
-            # If not set and create is true, a name is generated using the fullname template
-            name: ""
-
-          frontend:
-            lb:
-              type: LoadBalancer
-              http:
-                servicePort: 80
-                targetPort: 3000
-            service:
-              type: NodePort
-              http:
-                servicePort: 80
-                targetPort: 3000
-
-          backend:
-            lb:
-              type: LoadBalancer
-              http:
-                servicePort: 8000
-                targetPort: 8000
-            service:
-              type: NodePort
-              http:
-                servicePort: 8000
-                targetPort: 8000
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: "back-service"
+            labels:
+              {{- include "terraform-canvas.labels" . | nindent 4 }}-back
+          spec:
+            type: {{ .Values.backend.service.type }}
+            ports:
+              - port: {{ .Values.backend.service.http.servicePort }}
+                targetPort: {{ .Values.backend.service.http.targetPort }}
+                protocol: TCP
+            selector:
+              app: {{ include "terraform-canvas.name" . }}-back
           EOF
       - name: Pushes values file
         uses: dmnemec/copy_file_to_another_repo_action@main
         env:
           API_TOKEN_GITHUB: ${{ secrets.TOKEN_GITHUB }}
         with:
-          source_file: 'values.yaml'
+          source_file: 'back.yaml'
           destination_repo: 'Terraform-Canvas/canvas-helm'
-          destination_folder: 'charts/terraform-canvas'
+          destination_folder: 'charts/terraform-canvas/templates'
           user_email: 'kdg97811@naver.com'
           user_name: 'Eeap'
           commit_message: "build: add img ${{ steps.get-ocir-repository.outputs.repo_path }}:$IMAGE_TAG"
