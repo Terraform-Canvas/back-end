@@ -74,7 +74,7 @@ func MergeEnvTf(userFolderPath string, data []map[string]interface{}) error {
 				return err
 			}
 
-			re := regexp.MustCompile(`(?ms)resource\s+"[^"]*"\s"` + folderPath + `[^"]*"\s*{(?:[^{}]*{[^{}]*})*[^{}]*}`)
+			re := regexp.MustCompile(`(?ms)module\s+"` + folderPath + `[^"]*"\s*{(?:[^{}]*{[^{}]*})*[^{}]*}`)
 			if matches := re.FindAllString(string(sgFileContent), -1); len(matches) > 0 {
 				sgContent := strings.Join(matches, "\n\n")
 				if err := appendFile(userMainPath, []byte(sgContent)); err != nil {
@@ -151,7 +151,7 @@ func CreateTfvars(userFolderPath string, data []map[string]interface{}) error {
 		}
 
 		// Process vpc subnet cidr
-		if name := fmt.Sprintf("%s_privatesubnet", itemType); variables[name] != nil {
+		if name := fmt.Sprintf("%s_publicsubnet", itemType); variables[name] != nil {
 			subnetCnt := int(itemData["privatesubnet"].(float64) + itemData["publicsubnet"].(float64))
 			req := models.SubnetRequest{
 				VpcCidr:   itemData["cidr"].(string),
@@ -159,8 +159,8 @@ func CreateTfvars(userFolderPath string, data []map[string]interface{}) error {
 			}
 			res := calcSubnet(&req)
 
-			variables[name] = res[:int(itemData["privatesubnet"].(float64))]
-			variables["vpc_publicsubnet"] = res[int(itemData["privatesubnet"].(float64)):]
+			variables[name] = res[:int(itemData["publicsubnet"].(float64))]
+			variables["vpc_privatesubnet"] = res[int(itemData["publicsubnet"].(float64)):]
 		}
 
 		if name := fmt.Sprintf("%s_%s", itemType, "subnet_count"); variables[name] != nil {
