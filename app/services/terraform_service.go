@@ -74,7 +74,7 @@ func MergeEnvTf(userFolderPath string, data []map[string]interface{}) error {
 				return err
 			}
 
-			re := regexp.MustCompile(`(?ms)module\s+"` + folderPath + `[^"]*"\s*{(?:[^{}]*{[^{}]*})*[^{}]*}`)
+			re := regexp.MustCompile(`(?ms)resource\s+"[^"]*"\s"` + folderPath + `[^"]*"\s*{(?:[^{}]*{[^{}]*})*[^{}]*}`)
 			if matches := re.FindAllString(string(sgFileContent), -1); len(matches) > 0 {
 				sgContent := strings.Join(matches, "\n\n")
 				if err := appendFile(userMainPath, []byte(sgContent)); err != nil {
@@ -163,14 +163,15 @@ func CreateTfvars(userFolderPath string, data []map[string]interface{}) error {
 			variables["vpc_publicsubnet"] = res[int(itemData["privatesubnet"].(float64)):]
 		}
 
-		if name := fmt.Sprintf("%s_%s", itemType, "subnet"); variables[name] != nil {
+		if name := fmt.Sprintf("%s_%s", itemType, "subnet_count"); variables[name] != nil {
 			kind, start, end := subnetDepend(item)
 			vpcSubnet := variables[fmt.Sprintf("vpc_%s", kind)].([]string)
 			if vpcSubnetLen := len(vpcSubnet); end > vpcSubnetLen {
 				start %= vpcSubnetLen
 				end %= vpcSubnetLen
 			}
-			variables[name] = vpcSubnet[start:end]
+			variables[name] = []int{start, end}
+			variables[fmt.Sprintf("%s_%s", itemType, "subnet_type")] = kind
 		}
 
 		// Process user-data
@@ -195,6 +196,15 @@ func CreateTfvars(userFolderPath string, data []map[string]interface{}) error {
 			tfvars.WriteString("[")
 			for i, item := range v {
 				tfvars.WriteString(fmt.Sprintf(`"%s"`, item))
+				if i != len(v)-1 {
+					tfvars.WriteString(", ")
+				}
+			}
+			tfvars.WriteString("]")
+		case []int:
+			tfvars.WriteString("[")
+			for i, item := range v {
+				tfvars.WriteString(fmt.Sprintf("%v", item))
 				if i != len(v)-1 {
 					tfvars.WriteString(", ")
 				}
