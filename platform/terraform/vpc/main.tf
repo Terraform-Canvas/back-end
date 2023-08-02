@@ -14,4 +14,6 @@ module "vpc" {
 
   enable_nat_gateway = true
   single_nat_gateway = false
+
+  manage_default_security_group = false
 }
