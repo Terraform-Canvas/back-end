@@ -1,15 +1,33 @@
-variable "eks_control_name" {
+variable "eks_name" {
   type = string
 }
 
-variable "eks_control_version" {
+variable "eks_version" {
   type = string
 }
 
-variable "eks_control_subnet_count" {
+variable "eks_subnet_count" {
   type = list(any)
 }
 
-variable "eks_worker_subnet_count" {
-  type = list(any)
+variable "eks_subnet_type" {
+  type = string
+}
+
+variable "eks_userarn" {
+  type = string
+}
+
+variable "eks_username" {
+  type = string
+}
+
+variable "eks_endpoint_private" {
+  type = bool
+  default = true
+}
+
+variable "eks_endpoint_public" {
+  type = bool
+  default = true
 }
