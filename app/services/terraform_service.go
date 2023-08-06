@@ -16,7 +16,7 @@ import (
 	"github.com/hashicorp/hcl"
 )
 
-var subnetList []map[string]interface{}
+var subnetList []models.Resource
 
 func InitializeFolder(folderPath string) error {
 	subnetList = subnetList[:0]
@@ -32,7 +32,7 @@ func InitializeFolder(folderPath string) error {
 	return nil
 }
 
-func MergeEnvTf(userFolderPath string, data []map[string]interface{}) error {
+func MergeEnvTf(userFolderPath string, resources []models.Resource) error {
 	tfFilePath := filepath.Join("platform", "terraform")
 
 	// version config
@@ -53,8 +53,8 @@ func MergeEnvTf(userFolderPath string, data []map[string]interface{}) error {
 		return err
 	}
 
-	for _, item := range data {
-		folderPath := item["type"].(string)
+	for _, item := range resources {
+		folderPath := item.Type
 
 		if folderPath != "privatesubnet" && folderPath != "publicsubnet" {
 			mainFilePath := filepath.Join(tfFilePath, folderPath, "main.tf")
@@ -69,6 +69,41 @@ func MergeEnvTf(userFolderPath string, data []map[string]interface{}) error {
 				return err
 			}
 
+			userVarPath := filepath.Join(userFolderPath, "variables.tf")
+			if err := appendFile(userVarPath, varContent); err != nil {
+				return err
+			}
+
+			if folderPath == "eks" {
+				types_path := filepath.Join(tfFilePath, folderPath)
+				var node_groups []byte
+
+				eks_managed := item.Data["managed"].(map[string]interface{})
+				if len(eks_managed) != 0 {
+					contents, err := ioutil.ReadFile(filepath.Join(types_path, "eks_managed.txt"))
+					node_groups = append(node_groups, contents...)
+					vars, err := ioutil.ReadFile(filepath.Join(types_path, "eks_managed_var.txt"))
+					err = appendFile(userVarPath, vars)
+					if err != nil {
+						return err
+					}
+				}
+				fargate := item.Data["fargate"].(map[string]interface{})
+				if len(fargate) != 0 {
+					contents, err := ioutil.ReadFile(filepath.Join(types_path, "fargate.txt"))
+					node_groups = append(node_groups, contents...)
+					vars, err := ioutil.ReadFile(filepath.Join(types_path, "fargate_var.txt"))
+					err = appendFile(userVarPath, vars)
+					if err != nil {
+						return err
+					}
+				}
+
+				re := regexp.MustCompile(`//node_groups`)
+
+				mainContent = []byte(re.ReplaceAllString(string(mainContent), string(node_groups)))
+			}
+
 			userMainPath := filepath.Join(userFolderPath, "main.tf")
 			if err := appendFile(userMainPath, mainContent); err != nil {
 				return err
@@ -80,11 +115,6 @@ func MergeEnvTf(userFolderPath string, data []map[string]interface{}) error {
 				if err := appendFile(userMainPath, []byte(sgContent)); err != nil {
 					return err
 				}
-			}
-
-			userVarPath := filepath.Join(userFolderPath, "variables.tf")
-			if err := appendFile(userVarPath, varContent); err != nil {
-				return err
 			}
 		} else {
 			subnetList = append(subnetList, item)
@@ -111,7 +141,7 @@ func appendFile(filePath string, content []byte) error {
 	return nil
 }
 
-func CreateTfvars(userFolderPath string, data []map[string]interface{}) error {
+func CreateTfvars(userFolderPath string, resources []models.Resource) error {
 	var v map[string]interface{}
 	variablesFile := filepath.Join(userFolderPath, "variables.tf")
 	existingVariables, err := ioutil.ReadFile(variablesFile)
@@ -135,17 +165,20 @@ func CreateTfvars(userFolderPath string, data []map[string]interface{}) error {
 		}
 	}
 
-	for _, item := range data {
-		itemType := item["type"].(string)
-		itemData := item["data"].(map[string]interface{})
+	for _, item := range resources {
+		itemType := item.Type
+		itemData := item.Data
 
 		// Process variables
 		for key, value := range itemData {
 			if name := fmt.Sprintf("%s_%s", itemType, key); variables[name] != nil {
-				if i, ok := value.([]interface{}); ok {
-					variables[name] = toStringSlice(i)
-				} else {
-					variables[name] = value
+				variables[name] = processValue(name, value)
+			}
+			if key == "fargate" || key == "managed" {
+				for types, nval := range value.(map[string]interface{}) {
+					if name := fmt.Sprintf("%s_%s_%s", itemType, key, types); variables[name] != nil {
+						variables[name] = processValue(name, nval)
+					}
 				}
 			}
 		}
@@ -225,6 +258,15 @@ func CreateTfvars(userFolderPath string, data []map[string]interface{}) error {
 	return nil
 }
 
+func processValue(name string, value interface{}) interface{} {
+	switch v := value.(type) {
+	case []interface{}:
+		return toStringSlice(v)
+	default:
+		return v
+	}
+}
+
 func toStringSlice(slice []interface{}) []string {
 	result := make([]string, 0)
 	for _, item := range slice {
@@ -269,19 +311,19 @@ func calcSubnet(req *models.SubnetRequest) []string {
 	return subnetCidrs
 }
 
-func subnetDepend(item map[string]interface{}) (string, int, int) {
+func subnetDepend(item models.Resource) (string, int, int) {
 	tp, start, end := "", -1, -1
 	for idx, sub := range subnetList {
-		if sub["parent"] == item["id"].(string) {
+		if sub.Parent == item.Id {
 			if start == -1 {
-				tp = sub["type"].(string)
+				tp = sub.Type
 				start, end = idx, idx+1
 			} else {
 				end += 1
 			}
-		} else if sub["id"] == item["parent"].(string) {
+		} else if sub.Id == item.Parent {
 			if start == -1 {
-				tp = sub["type"].(string)
+				tp = sub.Type
 				start, end = idx, idx+1
 			} else {
 				end += 1
