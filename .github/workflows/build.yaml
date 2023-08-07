@@ -163,7 +163,7 @@ jobs:
           apiVersion: v1
           kind: Service
           metadata:
-            name: "back-service"
+            name: "backend-cluster"
             labels:
               {{- include "terraform-canvas.labels" . | nindent 4 }}-back
           spec:
