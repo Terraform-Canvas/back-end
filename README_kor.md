@@ -37,23 +37,23 @@
   <summary>Table of Contents</summary>
   <ol>
     <li>
-      <a href="#about-the-project">About The Project</a>
+      <a href="#mag-about-the-project">About The Project</a>
       <ul>
-        <li><a href="#built-with">Built With</a></li>
+        <li><a href="#card_file_box-built-with">Built With</a></li>
       </ul>
     </li>
     <li>
-      <a href="#getting-started">Getting Started</a>
+      <a href="#rocket-getting-started">Getting Started</a>
       <ul>
-        <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#configuration">Configuration</a></li>
+        <li><a href="#zap-prerequisites">Prerequisites</a></li>
+        <li><a href="#pencil2-configuration">Configuration</a></li>
       </ul>
     </li>
-    <li><a href="#architecture">Architecture</a></li>
-    <li><a href="#rest-api">REST API</a></li>
-    <li><a href="#contributing">Contributing</a></li>
-    <li><a href="#license">License</a></li>
-    <li><a href="#contact">Contact</a></li>
+    <li><a href="#globe_with_meridians-architecture">Architecture</a></li>
+    <li><a href="#memo-rest-apii">REST API</a></li>
+    <li><a href="#fire-contributing">Contributing</a></li>
+    <li><a href="#closed_lock_with_key-license">License</a></li>
+    <li><a href="#speech_balloon-contact">Contact</a></li>
   </ol>
 </details>
 
