@@ -1,0 +1,7 @@
+variable "eks_fargate_name" {
+  type = string
+}
+
+variable "eks_fargate_namespaces" {
+  type = list(any)
+}

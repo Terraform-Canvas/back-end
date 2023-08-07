@@ -1,0 +1,23 @@
+variable "eks_managed_min_size" {
+  type = number
+}
+
+variable "eks_managed_max_size" {
+  type = number
+}
+
+variable "eks_managed_desired_size" {
+  type = number
+}
+
+variable "eks_managed_instance_types" {
+  type = list(any)
+}
+
+variable "eks_managed_disk_size" {
+  type = number
+}
+
+variable "eks_managed_capacity_type" {
+  type = string
+}

@@ -6,6 +6,7 @@ import (
 
 	"main/pkg/utils"
 
+	"main/app/models"
 	"main/app/services"
 
 	"github.com/gofiber/fiber/v2"
@@ -29,8 +30,9 @@ func MergeEnvTf(c *fiber.Ctx) error {
 			"msg":   "unauthorized, check expiration time of your token",
 		})
 	}
-	var data []map[string]interface{}
-	if err := c.BodyParser(&data); err != nil {
+
+	resources := []models.Resource{}
+	if err := c.BodyParser(&resources); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": true,
 			"msg":   err,
@@ -54,7 +56,7 @@ func MergeEnvTf(c *fiber.Ctx) error {
 		})
 	}
 
-	err = services.MergeEnvTf(userFolderPath, data)
+	err = services.MergeEnvTf(userFolderPath, resources)
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 			"error": true,
@@ -62,7 +64,7 @@ func MergeEnvTf(c *fiber.Ctx) error {
 		})
 	}
 
-	err = services.CreateTfvars(userFolderPath, data)
+	err = services.CreateTfvars(userFolderPath, resources)
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 			"error": true,

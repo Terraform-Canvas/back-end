@@ -1,0 +1,12 @@
+eks_managed_node_groups = {
+  default = {
+    min_size     = var.eks_managed_min_size
+    max_size     = var.eks_managed_max_size
+    desired_size = var.eks_managed_desired_size
+
+    instance_types = var.eks_managed_instance_types
+    disk_size      = var.eks_managed_disk_size
+    capacity_type  = var.eks_managed_capacity_type
+  }
+}
+

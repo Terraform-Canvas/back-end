@@ -1,0 +1,10 @@
+fargate_profiles = {
+  default = {
+  name = var.fargate_name
+  selectors = [
+    for ns in var.fargate_namespaces : {
+      namespace = ns
+    }
+  ]}
+}
+
