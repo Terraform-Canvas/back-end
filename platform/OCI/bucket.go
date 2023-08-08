@@ -71,6 +71,9 @@ func GetObject(bucketName string, objectName string) ([]string, error) {
 		ObjectName:    &objectName,
 	}
 	response, err := client.GetObject(ctx, request)
+	if err != nil {
+		return nil, err
+	}
 	buf := new(strings.Builder)
 	_, err = io.Copy(buf, response.Content)
 	return strings.Split(buf.String(), ","), err
