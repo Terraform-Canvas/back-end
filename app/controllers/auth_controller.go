@@ -202,6 +202,7 @@ func UserKeySave(c *fiber.Ctx) error {
 		})
 	}
 	userKey := &models.UserKey{}
+	userKey.Email = claims.Email
 	if err := c.BodyParser(userKey); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": true,
@@ -235,20 +236,67 @@ func UserKeySave(c *fiber.Ctx) error {
 		})
 	}
 	result, err := OCI.GetObject("canvas-bucket", userKey.Email+".csv")
-	result = deleteWithTrim(result)
-	// 환경변수에 등록 (추후 변경이 필요한 부분 => 이 키를 사용하는 부분은 버킷에서 불러오는게 효율적인 방법일듯)
-	os.Setenv("AWS_ACCESS_KEY", result[0])
-	os.Setenv("AWS_SECRET_KEY", result[1])
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": true,
 			"msg":   err,
 		})
 	}
+	result = deleteWithTrim(result)
+	// 환경변수에 등록 (추후 변경이 필요한 부분 => 이 키를 사용하는 부분은 버킷에서 불러오는게 효율적인 방법일듯)
+	os.Setenv("AWS_ACCESS_KEY", result[0])
+	os.Setenv("AWS_SECRET_KEY", result[1])
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"error": false,
 		"msg":   "userKeySave success",
 	})
+}
+
+func UserKeyGet(c *fiber.Ctx) error {
+	now := time.Now().Unix()
+	claims, err := utils.ExtractTokenMetadata(c)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": true,
+			"msg":   err.Error(),
+		})
+	}
+	expires := claims.Expires
+	if now > expires {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": true,
+			"msg":   "unauthorized, check expiration time of your token",
+		})
+	}
+
+	result, err := OCI.GetObject("canvas-bucket", claims.Email+".csv")
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": true,
+			"msg":   err,
+		})
+	}
+	result = deleteWithTrim(result)
+	accessStatus := getStatus(result[0])
+	secretStatus := getStatus(result[1])
+	// 환경변수에 등록 (추후 변경이 필요한 부분 => 이 키를 사용하는 부분은 버킷에서 불러오는게 효율적인 방법일듯)
+	os.Setenv("AWS_ACCESS_KEY", result[0])
+	os.Setenv("AWS_SECRET_KEY", result[1])
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"error": false,
+		"keyInfo": fiber.Map{
+			"accessKey": accessStatus,
+			"secretKey": secretStatus,
+		},
+	})
+}
+
+func getStatus(key string) bool {
+	if key != "" {
+		return true
+	} else {
+		return false
+	}
 }
 
 func deleteWithTrim(result []string) []string {

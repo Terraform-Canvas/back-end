@@ -21,4 +21,5 @@ func PrivateRoutes(a *fiber.App) {
 	route.Post("/user/key", middleware.JWTProtected(), controllers.UserKeySave)
 	route.Get("/ec2/instanceTypes", middleware.JWTProtected(), controllers.EC2InstanceTypes)
 	route.Get("/ec2/ami", middleware.JWTProtected(), controllers.EC2Images)
+	route.Get("/user/key/get", middleware.JWTProtected(), controllers.UserKeyGet)
 }
