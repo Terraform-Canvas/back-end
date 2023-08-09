@@ -38,7 +38,7 @@ func TestS3ConfigUploadToS3(t *testing.T) {
 
 func TestS3UploadToS3(t *testing.T) {
 	tmpDir := t.TempDir()
-	email := "example@khu.ac.kr"
+	email := "example@gmail.com"
 	bucketName := "terraform-canvas-test-" + generateRandomString()
 	uploadDir := filepath.Join(tmpDir, "usertf", email)
 
@@ -78,7 +78,7 @@ func TestS3UploadToS3(t *testing.T) {
 
 func TestS3DownloadToZip(t *testing.T) {
 	tmpDir := t.TempDir()
-	email := "example@khu.ac.kr"
+	email := "example@gmail.com"
 	bucketName := "terraform-canvas-test-" + generateRandomString()
 	uploadDir := filepath.Join(tmpDir, "usertf", email)
 	downloadDir := filepath.Join(tmpDir, "terraform-canvas")
