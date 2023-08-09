@@ -147,7 +147,7 @@ AWS_REGION=USER_REGION
 
 [테라폼 유저 tf파일 생성](https://www.notion.so/tf-60291b66fe524c419f30dc3c13733682?pvs=21)
 
-[테라폼 실행](https://www.notion.so/fcff4f41d3ee4b5bb9bcc5fafe180229?pvs=21)
+[테라폼 삭제](https://facerain.notion.site/Destroy-d5ab2c50b09e46c3a1306e15498f04a0?pvs=4)
 
 [유저 api key 저장](https://www.notion.so/api-key-e9dc48f44d054aa8929aa976ce7313b8?pvs=21)
 
