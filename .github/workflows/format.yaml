@@ -20,6 +20,10 @@ jobs:
       OCI_CLI_FINGERPRINT: ${{ secrets.OCI_CLI_FINGERPRINT }}
       OCI_CLI_KEY_CONTENT: ${{ secrets.OCI_CLI_KEY_CONTENT }}
       OCI_CLI_REGION: ${{ secrets.OCI_CLI_REGION }}
+      TEST_ACCESS_TOKEN: ${{ secrets.test_access_token }}
+      TEST_REFRESH_TOKEN: ${{ secrets.test_refresh_token }}
+      TEST_EMAIL: ${{ secrets.test_email }}
+      TEST_PASSWORD: ${{ secrets.test_password }}
     steps:
       - uses: actions/checkout@v3
       - name: Setup Golang with cache
