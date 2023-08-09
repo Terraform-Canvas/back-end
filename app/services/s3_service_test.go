@@ -3,9 +3,11 @@ package services_test
 import (
 	"archive/zip"
 	"io/ioutil"
+	"math/rand"
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"main/app/services"
 	"main/platform/amazon"
@@ -14,8 +16,8 @@ import (
 )
 
 func TestS3ConfigUploadToS3(t *testing.T) {
-	existBucket := "exist-bucket"
-	nonExistBucket := "non-exist-bucket"
+	existBucket := "exist-bucket" + generateRandomString()
+	nonExistBucket := "non-exist-bucket" + generateRandomString()
 
 	_, err := services.ConfirmBucketName(existBucket)
 	assert.NoError(t, err)
@@ -37,7 +39,7 @@ func TestS3ConfigUploadToS3(t *testing.T) {
 func TestS3UploadToS3(t *testing.T) {
 	tmpDir := t.TempDir()
 	email := "example@khu.ac.kr"
-	bucketName := "terraform-canvas-test"
+	bucketName := "terraform-canvas-test-" + generateRandomString()
 	uploadDir := filepath.Join(tmpDir, "usertf", email)
 
 	err := os.MkdirAll(uploadDir, os.ModePerm)
@@ -77,7 +79,7 @@ func TestS3UploadToS3(t *testing.T) {
 func TestS3DownloadToZip(t *testing.T) {
 	tmpDir := t.TempDir()
 	email := "example@khu.ac.kr"
-	bucketName := "terraform-canvas-test"
+	bucketName := "terraform-canvas-test-" + generateRandomString()
 	uploadDir := filepath.Join(tmpDir, "usertf", email)
 	downloadDir := filepath.Join(tmpDir, "terraform-canvas")
 
@@ -117,4 +119,15 @@ func TestS3DownloadToZip(t *testing.T) {
 
 	err = amazon.DeleteS3Bucket(bucketName)
 	assert.NoError(t, err)
+}
+
+func generateRandomString() string {
+	rand.Seed(time.Now().UnixNano())
+
+	charset := "abcdefghijklmnopqrstuvwxyz0123456789"
+	result := make([]byte, 10)
+	for i := range result {
+		result[i] = charset[rand.Intn(len(charset))]
+	}
+	return string(result)
 }
