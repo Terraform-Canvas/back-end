@@ -11,15 +11,21 @@ jobs:
     strategy:
       matrix:
         go-version: [ '1.19' ]
-
+    env:
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
+      AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
+      OCI_CLI_USER: ${{ secrets.OCI_CLI_USER }}
+      OCI_CLI_TENANCY: ${{ secrets.OCI_CLI_TENANCY }}
+      OCI_CLI_FINGERPRINT: ${{ secrets.OCI_CLI_FINGERPRINT }}
+      OCI_CLI_KEY_CONTENT: ${{ secrets.OCI_CLI_KEY_CONTENT }}
+      OCI_CLI_REGION: ${{ secrets.OCI_CLI_REGION }}
     steps:
       - uses: actions/checkout@v3
-      - name: Setup Go
-        uses: actions/setup-go@v4
+      - name: Setup Golang with cache
+        uses: magnetikonline/action-golang-cache@v4
         with:
-          go-version: ${{ matrix.go-version }}
-      - name: Install dependencies
-        run: go get .
+          go-version-file: go.mod
       - name: Test with Go
         run: |
           go test -v -timeout 30s -coverprofile=cover.out -cover ./...
