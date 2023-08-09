@@ -2,6 +2,8 @@ package controllers
 
 import (
 	"log"
+	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -45,7 +47,8 @@ func UploadHandler(c *fiber.Ctx) error {
 		})
 	}
 
-	err = services.UploadToS3(email, bucketName)
+	uploadDir := filepath.Join("usertf", email)
+	err = services.UploadToS3(uploadDir, email, bucketName)
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 			"error": true,
@@ -86,7 +89,8 @@ func DownloadHandler(c *fiber.Ctx) error {
 
 	bucketName := "terraform-canvas-" + strings.Replace(email, "@", ".", 1)
 
-	zipFilePath, err := services.DownloadToZip(email, bucketName)
+	downloadDir := filepath.Join(os.TempDir(), email)
+	zipFilePath, err := services.DownloadToZip(downloadDir, bucketName)
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 			"error": true,

@@ -47,6 +47,7 @@ func MergeEnvTf(c *fiber.Ctx) error {
 		})
 	}
 	userFolderPath := filepath.Join("usertf", email)
+	terraformPath := filepath.Join("platform", "terraform")
 
 	err = services.InitializeFolder(userFolderPath)
 	if err != nil {
@@ -56,7 +57,7 @@ func MergeEnvTf(c *fiber.Ctx) error {
 		})
 	}
 
-	err = services.MergeEnvTf(userFolderPath, resources)
+	err = services.MergeEnvTf(terraformPath, userFolderPath, resources)
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 			"error": true,
