@@ -147,7 +147,7 @@ AWS_REGION=USER_REGION
 
 [Create tf](https://www.notion.so/facerain/tf-60291b66fe524c419f30dc3c13733682?pvs=4)
 
-[Apply tf](https://www.notion.so/facerain/fcff4f41d3ee4b5bb9bcc5fafe180229?pvs=4)
+[Destroy tf](https://facerain.notion.site/Destroy-d5ab2c50b09e46c3a1306e15498f04a0?pvs=4)
 
 [Save IAM user key](https://www.notion.so/facerain/api-key-e9dc48f44d054aa8929aa976ce7313b8?pvs=4)
 
