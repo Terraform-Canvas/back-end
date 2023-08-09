@@ -17,13 +17,25 @@ import (
 // 버킷생성
 func CreateBucket(bucketName string) error {
 	client := configs.GetS3Client()
-	_, err := client.CreateBucket(context.TODO(), &s3.CreateBucketInput{
-		Bucket: aws.String(bucketName),
-		CreateBucketConfiguration: &types.CreateBucketConfiguration{
-			LocationConstraint: types.BucketLocationConstraint(configs.GetAWSConfig().Region),
-		},
-	})
-	return err
+	if configs.GetAWSConfig().Region != "us-east-1" {
+		_, err := client.CreateBucket(context.TODO(), &s3.CreateBucketInput{
+			Bucket: aws.String(bucketName),
+			CreateBucketConfiguration: &types.CreateBucketConfiguration{
+				LocationConstraint: types.BucketLocationConstraint(configs.GetAWSConfig().Region),
+			},
+		})
+		if err != nil {
+			return err
+		}
+	} else {
+		_, err := client.CreateBucket(context.TODO(), &s3.CreateBucketInput{
+			Bucket: aws.String(bucketName),
+		})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // 버킷 존재여부 확인
