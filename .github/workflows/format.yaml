@@ -27,6 +27,10 @@ jobs:
       TEST_REFRESH_TOKEN: ${{ secrets.TEST_REFRESH_TOKEN }}
       TEST_EMAIL: ${{ secrets.TEST_EMAIL }}
       TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
+      JWT_REFRESH_KEY_EXPIRE_HOURS_COUNT: ${{ secrets.JWT_REFRESH_KEY_EXPIRE_HOURS_COUNT }}
+      JWT_REFRESH_KEY: ${{ secrets.JWT_REFRESH_KEY }}
+      JWT_SECRET_KEY_EXPIRE_MINUTES_COUNT: ${{ secrets.JWT_SECRET_KEY_EXPIRE_MINUTES_COUNT }}
+      JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
     steps:
       - uses: actions/checkout@v3
       - name: Setup Golang with cache
