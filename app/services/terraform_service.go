@@ -195,11 +195,11 @@ func CreateTfvars(userFolderPath string, resources []models.Resource) error {
 		}
 
 		if name := fmt.Sprintf("%s_%s", itemType, "subnet_count"); variables[name] != nil {
-			kind, start, end := subnetDepend(item)
+			kind, start, end := subnetDepend(item) 
 			vpcSubnet := variables[fmt.Sprintf("vpc_%s", kind)].([]string)
 			if vpcSubnetLen := len(vpcSubnet); end > vpcSubnetLen {
-				start %= vpcSubnetLen
-				end %= vpcSubnetLen
+				start -= len(subnetList) - vpcSubnetLen
+				end -= len(subnetList) - vpcSubnetLen
 			}
 			variables[name] = []int{start, end}
 			variables[fmt.Sprintf("%s_%s", itemType, "subnet_type")] = kind
