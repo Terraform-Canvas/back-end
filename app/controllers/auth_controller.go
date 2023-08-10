@@ -252,6 +252,8 @@ func UserKeySave(c *fiber.Ctx) error {
 	})
 }
 
+// UserKeyGet은 key를 bucket에서 가져오고 해당 키를 환경변수로 노출하고 key status를 반환하는 함수
+// @Router /v1/user/key/get [get]
 func UserKeyGet(c *fiber.Ctx) error {
 	now := time.Now().Unix()
 	claims, err := utils.ExtractTokenMetadata(c)
