@@ -81,7 +81,7 @@ func UserSignIn(c *fiber.Ctx) error {
 func UserSignOut(c *fiber.Ctx) error {
 	email, err := utils.GetEmailFromToken(c)
 	if err != nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
 			"error": true,
 			"msg":   err,
 		})
@@ -132,7 +132,7 @@ func UserRefresh(c *fiber.Ctx) error {
 	if now < expiresRefreshToken {
 		email, err := utils.GetEmailFromToken(c)
 		if err != nil {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
 				"error": true,
 				"msg":   err,
 			})
@@ -176,7 +176,7 @@ func UserRefresh(c *fiber.Ctx) error {
 		})
 	} else {
 		// 세션 만료 고지
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
 			"error": true,
 			"msg":   "unauthorized, your session was ended earlier",
 		})

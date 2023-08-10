@@ -151,6 +151,8 @@ AWS_REGION=USER_REGION
 
 [유저 api key 저장](https://www.notion.so/api-key-e9dc48f44d054aa8929aa976ce7313b8?pvs=21)
 
+[유저 api key 상태 불러오기](https://facerain.notion.site/api-key-f7d294170c1c4f4398f43667800ff87f?pvs=4)
+
 [S3 폴더 업로드](https://www.notion.so/S3-27cdcd0c7fdf47a68850e7500db487f6?pvs=21)
 
 [S3 폴더 다운로드](https://www.notion.so/S3-a45f2ff0d33d465e950cb1b8c159df41?pvs=21)
