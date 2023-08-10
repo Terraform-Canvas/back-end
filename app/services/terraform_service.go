@@ -221,7 +221,7 @@ func CreateTfvars(userFolderPath string, resources []models.Resource) error {
 		switch v := value.(type) {
 		case string:
 			tfvars.WriteString(fmt.Sprintf(`"%s"`, v))
-		case int, int64, float64:
+		case int, int64, float64, bool:
 			tfvars.WriteString(fmt.Sprintf("%v", v))
 		case []string:
 			tfvars.WriteString("[")
