@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -31,7 +30,7 @@ func UploadHandler(c *fiber.Ctx) error {
 		})
 	}
 	email, err := utils.GetEmailFromToken(c)
-	log.Println(email)
+
 	if err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"error": true,
