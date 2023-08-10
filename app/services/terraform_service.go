@@ -332,11 +332,6 @@ func subnetDepend(item models.Resource) (string, int, int) {
 }
 
 func ApplyTerraform(userFolderPath string) error {
-	err := os.Chdir(userFolderPath)
-	if err != nil {
-		return err
-	}
-
 	commands := []string{
 		"terraform fmt",
 		"terraform init",
@@ -346,7 +341,8 @@ func ApplyTerraform(userFolderPath string) error {
 	}
 
 	for _, command := range commands {
-		cmd := exec.Command("bash", "-c", command)
+		cmd := exec.Command("sh", "-c", command)
+		cmd.Dir = userFolderPath
 		err := cmd.Run()
 		if err != nil {
 			return err
@@ -368,13 +364,9 @@ func createFile(userFolderPath string, fileName string, content []byte) error {
 }
 
 func DestroyTerraform(userFolderPath string) error {
-	err := os.Chdir(userFolderPath)
-	if err != nil {
-		return err
-	}
-
-	cmd := exec.Command("bash", "-c", "terraform destroy -auto-approve")
-	err = cmd.Run()
+	cmd := exec.Command("sh", "-c", "terraform destroy -auto-approve")
+	cmd.Dir = userFolderPath
+	err := cmd.Run()
 	if err != nil {
 		return err
 	}
