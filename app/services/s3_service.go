@@ -3,6 +3,7 @@ package services
 import (
 	"archive/zip"
 	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -26,25 +27,23 @@ func ConfirmBucketName(bucketEmail string) (string, error) {
 }
 
 func UploadToS3(uploadDir string, email string, bucketName string) error {
-	err := filepath.Walk(uploadDir, func(path string, info os.FileInfo, errWalk error) error {
-		if !info.IsDir() {
-			file, err := os.Open(path)
-			if err != nil {
-				return err
-			}
-			defer file.Close()
-
-			key := email + "/" + info.Name()
-			err = amazon.UploadToS3(bucketName, key, file)
-			if err != nil {
-				return err
-			}
-		}
-		return nil
-	})
-
-	return err
-}
+	files, err := ioutil.ReadDir(uploadDir)
+	if err != nil {
+	   return err
+	}
+	for _, file := range files {
+	   if !file.IsDir() {
+		  f, err := os.Open(filepath.Join(uploadDir, file.Name()))
+		  key := email + "/" + file.Name()
+		  err = amazon.UploadToS3(bucketName, key, f)
+		  if err != nil {
+			 return err
+		  }
+	   }
+	}
+ 
+	return nil
+ }
 
 func DownloadToZip(downloadDir string, bucketName string) (string, error) {
 	if err := os.MkdirAll(downloadDir, 0o755); err != nil {
