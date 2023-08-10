@@ -151,6 +151,8 @@ AWS_REGION=USER_REGION
 
 [Save IAM user key](https://www.notion.so/facerain/api-key-e9dc48f44d054aa8929aa976ce7313b8?pvs=4)
 
+[Get IAM user key status](https://facerain.notion.site/api-key-f7d294170c1c4f4398f43667800ff87f?pvs=4)
+
 [Upload to S3](https://www.notion.so/facerain/S3-27cdcd0c7fdf47a68850e7500db487f6?pvs=4)
 
 [Download to S3](https://www.notion.so/facerain/S3-a45f2ff0d33d465e950cb1b8c159df41?pvs=4)
