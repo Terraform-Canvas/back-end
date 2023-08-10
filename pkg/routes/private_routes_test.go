@@ -12,6 +12,9 @@ import (
 )
 
 func TestPrivateRoutes(t *testing.T) {
+	//if err := godotenv.Load("../../.env"); err != nil {
+	//	panic(err)
+	//}
 	// Define a structure for specifying input and output data of multi test cases.
 	tests := []struct {
 		description   string
