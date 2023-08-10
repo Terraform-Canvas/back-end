@@ -17,13 +17,25 @@ import (
 // 버킷생성
 func CreateBucket(bucketName string) error {
 	client := configs.GetS3Client()
-	_, err := client.CreateBucket(context.TODO(), &s3.CreateBucketInput{
-		Bucket: aws.String(bucketName),
-		CreateBucketConfiguration: &types.CreateBucketConfiguration{
-			LocationConstraint: types.BucketLocationConstraint(configs.GetAWSConfig().Region),
-		},
-	})
-	return err
+	if configs.GetAWSConfig().Region != "us-east-1" {
+		_, err := client.CreateBucket(context.TODO(), &s3.CreateBucketInput{
+			Bucket: aws.String(bucketName),
+			CreateBucketConfiguration: &types.CreateBucketConfiguration{
+				LocationConstraint: types.BucketLocationConstraint(configs.GetAWSConfig().Region),
+			},
+		})
+		if err != nil {
+			return err
+		}
+	} else {
+		_, err := client.CreateBucket(context.TODO(), &s3.CreateBucketInput{
+			Bucket: aws.String(bucketName),
+		})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // 버킷 존재여부 확인
@@ -94,4 +106,27 @@ func DownloadFile(bucketName string, key string, destination string) error {
 	}
 
 	return nil
+}
+
+// 버킷 삭제
+func DeleteS3Bucket(bucketName string) error {
+	client := configs.GetS3Client()
+	_, err := client.DeleteBucket(context.TODO(), &s3.DeleteBucketInput{
+		Bucket: aws.String(bucketName),
+	})
+	return err
+}
+
+// 버킷 내 객체 삭제
+func DeleteObjects(bucketName string, objectKeys []string) error {
+	client := configs.GetS3Client()
+	var objectIds []types.ObjectIdentifier
+	for _, key := range objectKeys {
+		objectIds = append(objectIds, types.ObjectIdentifier{Key: aws.String(key)})
+	}
+	_, err := client.DeleteObjects(context.TODO(), &s3.DeleteObjectsInput{
+		Bucket: aws.String(bucketName),
+		Delete: &types.Delete{Objects: objectIds},
+	})
+	return err
 }

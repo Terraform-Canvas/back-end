@@ -7,11 +7,11 @@ module "vpc" {
   cidr = var.vpc_cidr
 
   azs                  = var.vpc_azs
-  public_subnets       = var.vpc_publicsubnet
   private_subnets      = var.vpc_privatesubnet
+  public_subnets       = var.vpc_publicsubnet
   enable_dns_hostnames = true
   enable_dns_support   = true
 
-  enable_nat_gateway = length(var.vpc_publicsubnet) == 0 ? false : true
+  enable_nat_gateway = var.vpc_nat_gateway
   single_nat_gateway = false
 }

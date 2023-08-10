@@ -32,9 +32,7 @@ func InitializeFolder(folderPath string) error {
 	return nil
 }
 
-func MergeEnvTf(userFolderPath string, resources []models.Resource) error {
-	tfFilePath := filepath.Join("platform", "terraform")
-
+func MergeEnvTf(tfFilePath string, userFolderPath string, resources []models.Resource) error {
 	// version config
 	versionPath := filepath.Join(tfFilePath, "version", "versions.tf")
 	versionContent, err := ioutil.ReadFile(versionPath)
@@ -223,7 +221,7 @@ func CreateTfvars(userFolderPath string, resources []models.Resource) error {
 		switch v := value.(type) {
 		case string:
 			tfvars.WriteString(fmt.Sprintf(`"%s"`, v))
-		case int, int64, float64:
+		case int, int64, float64, bool:
 			tfvars.WriteString(fmt.Sprintf("%v", v))
 		case []string:
 			tfvars.WriteString("[")

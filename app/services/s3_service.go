@@ -25,9 +25,7 @@ func ConfirmBucketName(bucketEmail string) (string, error) {
 	return bucketName, err
 }
 
-func UploadToS3(email string, bucketName string) error {
-	uploadDir := filepath.Join("usertf", email)
-
+func UploadToS3(uploadDir string, email string, bucketName string) error {
 	err := filepath.Walk(uploadDir, func(path string, info os.FileInfo, errWalk error) error {
 		if !info.IsDir() {
 			file, err := os.Open(path)
@@ -48,14 +46,12 @@ func UploadToS3(email string, bucketName string) error {
 	return err
 }
 
-func DownloadToZip(email string, bucketName string) (string, error) {
-	tempDir := os.TempDir()
-	downloadDir := filepath.Join(tempDir, email)
+func DownloadToZip(downloadDir string, bucketName string) (string, error) {
 	if err := os.MkdirAll(downloadDir, 0o755); err != nil {
 		return "", err
 	}
 
-	zipFilePath := filepath.Join(tempDir, email+".zip")
+	zipFilePath := downloadDir + ".zip"
 	zipFile, err := os.Create(zipFilePath)
 	if err != nil {
 		return "", err
