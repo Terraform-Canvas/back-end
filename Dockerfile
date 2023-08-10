@@ -8,6 +8,9 @@ WORKDIR /build
 # Copy and download dependency using go mod.
 COPY go.mod go.sum ./
 RUN go mod download
+RUN wget https://releases.hashicorp.com/terraform/5.1.4/terraform_5.1.4_linux_amd64.zip
+RUN unzip terraform_5.1.4_linux_amd64.zip && rm terraform_5.1.4_linux_amd64.zip
+RUN mv terraform /usr/bin/terraform
 
 # Copy the code into the container.
 COPY . .
