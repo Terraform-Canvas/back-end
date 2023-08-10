@@ -131,7 +131,7 @@ AWS_REGION=USER_REGION
 
 ## :globe_with_meridians: Architecture
 ### :triangular_flag_on_post: 전체 서비스 구성도
-![service](./images/service.png)
+![service](./images/service-architecture.png)
 
 ### :triangular_flag_on_post:개발 환경 구성도
 ![env](./images/env-architecture.png)
