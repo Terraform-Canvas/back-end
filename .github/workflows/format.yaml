@@ -20,7 +20,7 @@ jobs:
       fingerprint: ${{ secrets.OCI_CLI_FINGERPRINT }}
       privateKey: ${{ secrets.OCI_CLI_KEY_CONTENT }}
       region: ${{ secrets.OCI_CLI_REGION }}
-      compartmentID: ${{ secrets.OCI_COMPARTMENT_OCID }}
+      compartmentID: ${{ secrets.OCI_COMPARTMENT_ID }}
       auth_token: ${{ secrets.OCI_AUTH_TOKEN }}
       privateKeyPass: ${{ secrets.OCI_PRIVATE_KEY_PASS }}
       TEST_ACCESS_TOKEN: ${{ secrets.TEST_ACCESS_TOKEN }}
