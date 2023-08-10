@@ -20,3 +20,7 @@ variable "vpc_azs" {
   type    = list(any)
   default = ["us-east-1a", "us-east-1c"]
 }
+
+variable "vpc_nat_gateway" {
+  type = bool
+}
