@@ -346,7 +346,7 @@ func ApplyTerraform(userFolderPath string) error {
 	}
 
 	for _, command := range commands {
-		cmd := exec.Command("bash", "-c", command)
+		cmd := exec.Command("sh", "-c", command)
 		err := cmd.Run()
 		if err != nil {
 			return err
@@ -373,7 +373,7 @@ func DestroyTerraform(userFolderPath string) error {
 		return err
 	}
 
-	cmd := exec.Command("bash", "-c", "terraform destroy -auto-approve")
+	cmd := exec.Command("sh", "-c", "terraform destroy -auto-approve")
 	err = cmd.Run()
 	if err != nil {
 		return err
